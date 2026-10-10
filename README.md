@@ -1,20 +1,20 @@
-# AppleSeed Free
+# AppleSeed
 
 Remote Mac access from your Android phone over Tailscale, including the normal Mac lock screen while the Mac and service are online.
 
-[Download Free and the Mac companion](https://github.com/eaTurk1/AppleSeed-Free/releases/tag/v1.6.0) · [Website](https://erhan.ai/appleseed) · [Setup](SETUP.md)
+[Download AppleSeed and the Mac companion](https://github.com/eaTurk1/AppleSeed/releases/tag/v1.6.0) · [Website](https://erhan.ai/appleseed) · [Setup](SETUP.md)
 
-Free includes relative trackpad control, clicking and dragging, pinch zoom, keyboard input, landscape fullscreen, an optional timer set before connection, encrypted credential remembering, and a background session notification. Tools stays visible with a lock.
+AppleSeed includes relative trackpad control, clicking and dragging, pinch zoom, keyboard input, landscape fullscreen, an optional timer set before connection, encrypted credential remembering, and a background session notification. Tools stays visible with a lock.
 
-The full Tools edition is a separate **$5 one-time** download. It adds quick password reuse for unlocking, monitor selection, display and screen saver controls, and session changes while connected. Checkout is being set up. Its APK and development repository are private and are not published here.
+AppleSeed Pro is a separate **$5 one-time** download. It adds quick password reuse for unlocking, monitor selection, display and screen saver controls, and session changes while connected. Checkout is being set up. Its APK and development repository are private and are not published here.
 
 ## Downloads
 
-- `AppleSeed-Free-1.6.0.apk`: Android 9 or newer.
+- `AppleSeed-1.6.0.apk`: Android 9 or newer.
 - `AppleSeed-Mac-1.6.0-arm64.zip`: shared AppleSeed.app companion for Apple silicon, macOS 13 or newer.
 - `SHA256SUMS.txt`: checksums for those two files.
 
-The Mac companion is ad-hoc signed, not Apple-notarized. The native APK retains your configured Mac and encrypted credentials when installed over the signed 1.5 public app. Full uses the same signing identity.
+The Mac companion is ad-hoc signed, not Apple-notarized. The native APK retains your configured Mac and encrypted credentials when installed over the signed 1.5 public app. AppleSeed Pro uses the same signing identity.
 
 ## Set up
 
@@ -22,9 +22,9 @@ The Mac companion is ad-hoc signed, not Apple-notarized. The native APK retains 
 2. Enable macOS System Settings → General → Sharing → Screen Sharing and allow your Mac account.
 3. Unzip AppleSeed.app, move it to Applications, open it, and choose Setup Mac service… from its menu bar.
 4. Choose Copy Mac address, then enter that private HTTPS address in the Android app.
-5. Connect with the allowed Mac account. In Free, unlock the lock screen using the remote keyboard. The password shortcut in Tools belongs to Full.
+5. Connect with the allowed Mac account. In AppleSeed, unlock the lock screen using the remote keyboard. The password shortcut in Tools belongs to AppleSeed Pro.
 
-The shared Mac browser client has locked Tools. Full's native client exposes the full controls. Your actual remote desktop stays on your Mac behind Tailscale; this public repository only distributes Free, the shared companion, and documentation.
+The shared Mac browser client has locked Tools. AppleSeed Pro's native client exposes the full controls. Your actual remote desktop stays on your Mac behind Tailscale; this public repository only distributes AppleSeed, the shared companion, and documentation.
 
 ## Limits
 

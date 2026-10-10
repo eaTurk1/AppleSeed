@@ -1,6 +1,6 @@
 # Editions
 
-This guide covers the shared Mac service. AppleSeed Free has locked Tools. Use the remote keyboard to unlock a Mac in Free. The $5 Full APK adds Tools, monitor selection, quick password reuse, and live display/session settings. Checkout is being configured.
+This guide covers the shared Mac service. AppleSeed has locked Tools. Use the remote keyboard to unlock a Mac in AppleSeed. The $5 AppleSeed Pro APK adds Tools, monitor selection, quick password reuse, and live display/session settings. Checkout is being configured.
 
 # AppleSeed setup and recovery
 
