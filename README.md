@@ -2,19 +2,27 @@
 
 Remote Mac access from your Android phone over Tailscale, including the normal Mac lock screen while the Mac and service are online.
 
-[Download AppleSeed and the Mac companion](https://github.com/eaTurk1/AppleSeed/releases/tag/v1.6.0) · [Website](https://erhan.ai/appleseed) · [Setup](SETUP.md)
+[Download AppleSeed and the Mac companion](https://github.com/eaTurk1/AppleSeed/releases/tag/v1.6.3) · [Website](https://erhan.ai/appleseed) · [Setup](SETUP.md)
 
-AppleSeed includes relative trackpad control, clicking and dragging, pinch zoom, keyboard input, landscape fullscreen, an optional timer set before connection, encrypted credential remembering, and a background session notification. Tools stays visible with a lock.
+AppleSeed includes relative trackpad control, clicking and dragging, pinch zoom, keyboard input, landscape fullscreen, an optional timer set before connection, encrypted credential remembering, and a background session notification, and Auto/Quality/Speed stream options. Tools stays visible with a lock.
 
 AppleSeed Pro is a separate **$5 one-time** download. It adds quick password reuse for unlocking, monitor selection, display and screen saver controls, and session changes while connected. Checkout is being set up. Its APK and development repository are private and are not published here.
 
+## What's new in 1.6.3
+
+Closing AppleSeed or removing it from Recents keeps the session in its foreground service. Reopening restores the same connection, page and timer deadline. Tap Disconnect in the app or notification to end it. A timer still expires while the app is closed; force-stop, process termination and network loss can end the connection. Mac idle lock settings still apply.
+
+This update also preserves zoom across keyboard and rotation changes, allows up to 32x pinch zoom, uses a smaller cursor, improves trackpad precision and dragging, and adds Auto, Quality and Speed without reconnecting.
+
+Install the APK over your current app. **Existing users do not need to reinstall the Mac companion for these fixes.** This release includes the unchanged 1.6.0 Mac companion for new installations.
+
 ## Downloads
 
-- `AppleSeed-1.6.0.apk`: Android 9 or newer.
+- `AppleSeed-1.6.3.apk`: Android 9 or newer.
 - `AppleSeed-Mac-1.6.0-arm64.zip`: shared AppleSeed.app companion for Apple silicon, macOS 13 or newer.
 - `SHA256SUMS.txt`: checksums for those two files.
 
-The Mac companion is ad-hoc signed, not Apple-notarized. The native APK retains your configured Mac and encrypted credentials when installed over the signed 1.5 public app. AppleSeed Pro uses the same signing identity.
+The Mac companion is ad-hoc signed, not Apple-notarized. The native APK retains your configured Mac and encrypted credentials when installed over an earlier official signed AppleSeed APK. AppleSeed Pro uses the same signing identity.
 
 ## Set up
 

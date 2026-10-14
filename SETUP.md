@@ -31,6 +31,14 @@ Configure the matching **system-daemon** listener using the exact command printe
 
 Before relying on outage recovery, save your work, arrange local fallback access, perform a controlled restart, and test from your phone's mobile data **before local sign-in**. Then confirm that signing in through the visible login screen reaches the actual desktop. The installer does not reboot the Mac, enable automatic restart, or bypass disk unlocking. No cold-boot claim is made by this release.
 
+## Updating and closing the phone app
+
+Download the latest official APK from [Releases](https://github.com/eaTurk1/AppleSeed/releases/latest) and install it over your existing app. Keep your existing installation to retain its Mac address and phone-encrypted remembered credentials. Independently signed builds cannot install over the official APK. The 1.6.3 Android fixes work with the existing 1.6.0 Mac companion.
+
+Closing the app, pressing Home or removing its task from Recents retains an active connection. Reopening reuses the same page and original timer; it does not start another session. Use Disconnect in the app or foreground notification to end it, or let your selected timer expire. With no timer it stays connected until disconnected, subject to Android process termination, force-stop, network loss and Mac availability. The Mac's own idle lock settings still apply.
+
+Auto adapts stream quality to the connection. Quality favors detail and Speed favors responsiveness. Change the mode before connecting or with the live selector. Pinch zoom supports up to 32x; Fit restores the full selected view.
+
 ## Troubleshooting
 
 | Symptom | Check |
@@ -38,7 +46,7 @@ Before relying on outage recovery, save your work, arrange local fallback access
 | Mac unreachable | Power, internet, Tailscale connected on both devices, saved HTTPS URL, listener status |
 | Access denied | Same Tailscale user identity; a different user or a tagged node is rejected |
 | Connect disabled | Screen Sharing enabled, intended account allowed, no other AppleSeed session open |
-| Return to Connect | Read the displayed reason; check network, timer, Mac sleep, and service logs |
+| Session ends when app closes | Install 1.6.3 or newer; check whether Android stopped the process, Tailscale disconnected, or the selected timer expired |\n| Return to Connect | Read the displayed reason; check network, timer, Mac sleep, and service logs |
 | One monitor missing | Screen Sharing must actually include that display; fit or choose All shared displays |
 | Power timers unavailable | Install the optional boot/power helper; ordinary login setup does not grant sudo |
 | Screen saver controls unavailable | Mac must be signed in with AppleSeed companion running |
