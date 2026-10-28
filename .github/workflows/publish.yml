@@ -1,0 +1,137 @@
+name: Publish AppleSeed preview
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      source_sha256:
+        description: SHA-256 of the reviewed AppleSeed 2.0.0 source archive
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: appleseed-release
+  cancel-in-progress: false
+jobs:
+  checks:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check application source when present
+        run: |
+          if [ -f package-lock.json ]; then npm ci && npm test; else echo 'Publication bootstrap; source will be verified by the release job.'; fi
+  source:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      head: ${{ steps.publish.outputs.head }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify and prepare reviewed source
+        env:
+          SOURCE_SHA256: ${{ inputs.source_sha256 }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          curl --fail --location --silent --show-error https://erhan.ai/appleseed/downloads/AppleSeed-Source-2.0.0.tar.gz -o /tmp/appleseed-source.tar.gz
+          echo "$SOURCE_SHA256  /tmp/appleseed-source.tar.gz" | sha256sum --check
+          mkdir /tmp/appleseed-source
+          tar -xzf /tmp/appleseed-source.tar.gz -C /tmp/appleseed-source --no-same-owner
+          rsync -a --delete --exclude=.git --exclude=.github/workflows/ /tmp/appleseed-source/ ./
+          npm ci
+          npm test
+      - name: Publish complete source
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name 'AppleSeed contributors'
+          git config user.email 'appleseed@users.noreply.github.com'
+          git add .
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish the complete free AppleSeed 2.0.0 source'
+            git push origin main
+          fi
+          echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  desktop:
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            asset: AppleSeed-Windows-2.0.0-x64.zip
+          - runner: ubuntu-24.04
+            asset: AppleSeed-Linux-2.0.0-x64.tar.gz
+          - runner: ubuntu-24.04-arm
+            asset: AppleSeed-Linux-2.0.0-arm64.tar.gz
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Download the actual release binary and its reviewed checksum
+        shell: bash
+        env:
+          ASSET: ${{ matrix.asset }}
+        run: |
+          set -euo pipefail
+          mkdir package
+          curl --fail --location --silent --show-error "https://erhan.ai/appleseed/downloads/$ASSET" -o "$ASSET"
+          curl --fail --location --silent --show-error https://erhan.ai/appleseed/downloads/SHA256SUMS-2.0.0.txt -o SHA256SUMS.txt
+          grep "  $ASSET$" SHA256SUMS.txt | sha256sum --check
+          if [[ "$ASSET" == *.zip ]]; then unzip -q "$ASSET" -d package; else tar -xzf "$ASSET" -C package; fi
+      - name: Windows UI and host runtime check
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath package/AppleSeed/AppleSeed.exe -ArgumentList '--smoke-test','--smoke-test-host' -PassThru -RedirectStandardOutput smoke.txt -RedirectStandardError smoke-error.txt
+          if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'AppleSeed smoke check timed out' }
+          Get-Content smoke.txt
+          if ($process.ExitCode -ne 0) { Get-Content smoke-error.txt; throw 'AppleSeed smoke check failed' }
+      - name: Linux UI and host runtime check
+        if: runner.os == 'Linux'
+        run: xvfb-run -a package/AppleSeed/AppleSeed --no-sandbox --smoke-test --smoke-test-host
+  ios:
+    needs: source
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.source.outputs.head }}
+      - name: Compile unsigned iOS simulator application
+        run: xcodebuild -project ios/AppleSeed.xcodeproj -scheme AppleSeed -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/appleseed-ios CODE_SIGNING_ALLOWED=NO build
+  release:
+    needs: [source, desktop, ios]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.source.outputs.head }}
+      - name: Verify all reviewed release files
+        run: |
+          set -euo pipefail
+          mkdir artifacts
+          cd artifacts
+          curl --fail --location --silent --show-error https://erhan.ai/appleseed/downloads/SHA256SUMS-2.0.0.txt -o SHA256SUMS-2.0.0.txt
+          while read -r digest file; do
+            [[ "$file" =~ ^AppleSeed-[A-Za-z0-9._-]+$ ]]
+            curl --fail --location --silent --show-error "https://erhan.ai/appleseed/downloads/$file" -o "$file"
+          done < SHA256SUMS-2.0.0.txt
+          sha256sum --check SHA256SUMS-2.0.0.txt
+      - name: Publish free preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v2.0.0-preview.1 artifacts/* --target "$(git rev-parse HEAD)" --prerelease --title 'AppleSeed 2.0.0 preview: free and open source' --notes-file CHANGELOG.md
