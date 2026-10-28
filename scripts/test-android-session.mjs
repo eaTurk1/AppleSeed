@@ -1,0 +1,32 @@
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, writeFileSync, readdirSync, readFileSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// A disposable emulator is required. No owner endpoint, password, or phone is used.
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const version = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).version;
+const sdk = process.env.ANDROID_HOME || path.join(os.homedir(), 'Library/Android/sdk');
+const jdk = process.env.JAVA_HOME || '/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home';
+const tools = path.join(sdk, 'build-tools/36.0.0'), adb = path.join(sdk, 'platform-tools/adb');
+const serial = process.env.APPLESEED_TEST_EMULATOR;
+if (!serial?.startsWith('emulator-')) throw new Error('Set APPLESEED_TEST_EMULATOR to a disposable emulator serial. Physical phones are not allowed.');
+const build = path.join(root, 'android/build/lifecycle'); mkdirSync(path.join(build, 'classes'), { recursive: true }); mkdirSync(path.join(build, 'dex'), { recursive: true });
+const env = { ...process.env, JAVA_HOME: jdk, PATH: `${path.join(jdk, 'bin')}:${process.env.PATH}` };
+const run = (file, args) => execFileSync(file, args, { env, encoding: 'utf8', stdio: 'pipe' });
+const manifest = path.join(build, 'AndroidManifest.xml');
+writeFileSync(manifest, `<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.appleseed.test"><uses-sdk android:minSdkVersion="28" android:targetSdkVersion="36"/><application android:label="AppleSeed lifecycle test"/><instrumentation android:name="org.appleseed.test.SessionInstrumentation" android:targetPackage="org.appleseed.remote"/></manifest>`);
+run(path.join(tools, 'aapt2'), ['link', '-o', path.join(build, 'unsigned.apk'), '-I', path.join(sdk, 'platforms/android-36/android.jar'), '--manifest', manifest]);
+run(path.join(jdk, 'bin/javac'), ['--release', '17', '-classpath', path.join(sdk, 'platforms/android-36/android.jar'), '-d', path.join(build, 'classes'), path.join(root, 'android/test/SessionInstrumentation.java')]);
+run(path.join(tools, 'd8'), ['--release', '--min-api', '28', '--lib', path.join(sdk, 'platforms/android-36/android.jar'), '--output', path.join(build, 'dex'), ...readdirSync(path.join(build, 'classes/org/appleseed/test')).filter(name => name.endsWith('.class')).map(name => path.join(build, 'classes/org/appleseed/test', name))]);
+run('/usr/bin/zip', ['-q', '-j', path.join(build, 'unsigned.apk'), path.join(build, 'dex/classes.dex')]);
+run(path.join(tools, 'zipalign'), ['-f', '4', path.join(build, 'unsigned.apk'), path.join(build, 'aligned.apk')]);
+const signing = path.join(os.homedir(), 'Library/Application Support/AppleSeed/public-signing');
+const apk = path.join(build, 'test.apk');
+run(path.join(tools, 'apksigner'), ['sign', '--key', path.join(signing, 'release.pk8'), '--cert', path.join(signing, 'release.x509.pem'), '--out', apk, path.join(build, 'aligned.apk')]);
+console.log(run(adb, ['-s', serial, 'install', '--no-incremental', '-r', path.join(root, `releases/AppleSeed-${version}.apk`)]).trim());
+console.log(run(adb, ['-s', serial, 'install', '--no-incremental', '-r', apk]).trim());
+const result = run(adb, ['-s', serial, 'shell', 'am', 'instrument', '-w', '-r', 'org.appleseed.test/org.appleseed.test.SessionInstrumentation']);
+console.log(result.trim());
+if (!result.includes('INSTRUMENTATION_CODE: -1') || !result.includes('Native Android AppleSeed checks passed')) throw new Error('Native lifecycle checks failed');

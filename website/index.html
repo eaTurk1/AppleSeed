@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101010">
+<title>AppleSeed: free remote desktop over Tailscale</title>
+<meta name="description" content="Free, open-source remote desktop over Tailscale. Android, Mac, Windows, Linux and native iOS source. Every feature included, with optional tips.">
+<link rel="icon" href="./icon.png"><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to downloads and setup</a>
+<div class="page">
+<aside class="identity">
+<a class="wordmark" href="./">APPLESEED<span>PRIVATE REMOTE ACCESS</span></a>
+<img class="seed" src="./icon.png" alt="AppleSeed’s red tree growing out of an iMac" width="260" height="260">
+<p class="identity-note">Your desktop.<br> Your account.<br> Your way back in.</p>
+<nav aria-label="Page"><a href="#downloads">Get AppleSeed <span>↓</span></a><a href="#setup">Set it up <span>↳</span></a><a href="https://github.com/eaTurk1/AppleSeed">GitHub repository <span>↗</span></a></nav>
+<div class="edition"><span>2.0 / PREVIEW</span><span>FREE · OPEN SOURCE</span></div>
+</aside>
+<main id="content">
+<header class="mast"><span>MAC / WINDOWS / LINUX / ANDROID / iOS</span><span>V2.0</span></header>
+<div class="workspace">
+<article class="manual">
+<section class="opening">
+<h1>Your desktop.<br>Within reach.</h1>
+<p class="dek">Open AppleSeed on your phone or computer and get back to your desktop. A normal locked Mac stays within reach while its services and Tailscale are online.</p>
+<p class="unlock-note"><b>One AppleSeed. Every feature included.</b> Unlock, monitor controls, display settings, stream quality and Web Portal are free. The Unlock strip sits below the Mac image so you can watch the login screen while pressing it.</p>
+<p class="fine">Works with the normal macOS lock screen while the Mac is online. FileVault’s startup screen is a separate limitation.</p>
+</section>
+<section id="downloads" class="downloads" aria-label="Downloads">
+<div class="label"><h2>Get AppleSeed</h2><span>01</span></div>
+<a class="package" href="./downloads/AppleSeed-2.0.0.apk"><span><b>Android</b><small>Signed APK · Android 9+ · all features</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
+<a class="package" href="./downloads/AppleSeed-Mac-2.0.0-arm64.zip"><span><b>Mac companion</b><small>Apple silicon · macOS 13+ · private host</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
+<a class="package" href="./downloads/AppleSeed-Windows-2.0.0-x64.zip"><span><b>Windows</b><small>Portable x64 · client and VNC host bridge · development build</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
+<a class="package" href="./downloads/AppleSeed-Linux-2.0.0-x64.tar.gz"><span><b>Linux</b><small>Portable x64 · client and VNC host bridge · development build</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
+<a class="package" href="./downloads/AppleSeed-Linux-2.0.0-arm64.tar.gz"><span><b>Linux ARM64</b><small>Portable ARM64 · client and VNC host bridge · development build</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
+<a class="package" href="./downloads/AppleSeed-iOS-2.0.0-unsigned.zip"><span><b>iPhone &amp; iPad</b><small>Unsigned device build and Xcode project · signing required</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
+<p class="fine">The iOS download is for building/signing in Xcode. It is not an App Store or TestFlight installation. Browser access is also available on iPhone and iPad.</p>
+<a class="inline-link" href="./downloads/AppleSeed-Source-2.0.0.tar.gz">Download the complete MIT-licensed source ↗</a>
+<p class="dependency"><b>Tailscale is required on both devices.</b><br>Use the same Tailscale user identity on your host and client. The optional public Web Portal can pair an approved browser without Tailscale.</p>
+<p class="fine">Mac build: ad-hoc signed, not Apple-notarized. Review the release before allowing its first launch in macOS.</p>
+<a class="inline-link" href="./downloads/SHA256SUMS-2.0.0.txt">Download checksums ↗</a>
+</section>
+<section id="setup" class="setup">
+<div class="label"><h2>The first connection</h2><span>02</span></div>
+<details open><summary><span class="step-marker">A</span>Your Mac <span class="expand">+</span></summary><div class="instruction"><ol>
+<li>Install <a href="https://tailscale.com/download">Tailscale</a>, sign in, and connect. Enable MagicDNS and HTTPS for your tailnet if requested.</li>
+<li>Open <b>System Settings → General → Sharing → Screen Sharing</b>. Allow the Mac account you’ll connect with.</li>
+<li>Unzip the Mac download, put <b>AppleSeed.app</b> in Applications, and open it. In its menu bar, choose <b>Setup Mac service…</b>.</li>
+<li>Choose <b>Copy Mac address</b> from the AppleSeed menu. This is the private address you’ll enter on your phone.</li>
+</ol><p class="fine">Keep AppleSeed.app in the same location after setup. If macOS blocks the first launch, use its normal Privacy & Security → Open Anyway flow after reviewing the app.</p></div></details>
+<details><summary><span class="step-marker">B</span>Your phone <span class="expand">+</span></summary><div class="instruction"><ol>
+<li>Install the APK. Android may ask you to allow installation from your download app.</li>
+<li>Connect Tailscale under the same user identity as your Mac.</li>
+<li>Open AppleSeed and paste the address copied from the Mac. It looks like <code>https://my-mac.my-tailnet.ts.net:9447</code>.</li>
+<li>Connect with the Mac account you allowed in Screen Sharing. Choose <b>Remember on this phone</b> to keep the password encrypted on this device.</li>
+</ol><p>You can change the Mac address in Session settings.</p></div></details>
+<details><summary><span class="step-marker">C</span>Unlock &amp; use it <span class="expand">+</span></summary><div class="instruction"><p>Choose <b>Unlock Mac</b> from the opening screen, or <b>Unlock</b> in the live toolbar. Select your Mac account if needed, then tap the button in the strip below the desktop image. Enable AppleSeed in macOS Accessibility for the secure-field shortcut.</p><p>Slide to move the cursor, tap to click, hold and slide to drag, pinch to zoom, and rotate a phone for fullscreen. Monitor controls, Keyboard, stream quality and optional timers are included.</p><p>Android retains the session when you leave the app. iOS may suspend networking in the background. Network loss, host sleep or process termination can interrupt any client.</p></div></details>
+<details><summary><span class="step-marker">D</span>Windows &amp; Linux hosts <span class="expand">+</span></summary><div class="instruction"><p>Extract the desktop app and open it. To connect to a Mac, paste its private Tailscale address. To share the Windows or Linux computer, install a password-protected VNC server bound to localhost, then expand <b>Share this computer</b> in AppleSeed.</p><p>Linux Wayland support depends on the VNC server and compositor. Mac secure-field Unlock and macOS display settings are Mac-specific. On other hosts, use Keyboard for OS sign-in.</p></div></details>
+<details><summary><span class="step-marker">↗</span>Web Portal <span class="expand">+</span></summary><div class="instruction"><p>Open <b>Web Portal</b> directly from the opening screen or live toolbar. Enable it for a chosen duration and copy the one-use code. On the other computer, visit your configured <code>/remote</code> URL and enter that code. Two browser windows can show separate monitors.</p><p>The public route stays unavailable until you enable it, and Disable revokes access immediately. HTTPS reverse-proxy hosting is separate setup. The owner API and VNC remain private.</p><a class="inline-link" href="./remote">Open this Mac’s Web Portal ↗</a></div></details>
+</section>
+<section class="field-notes">
+<div class="label"><h2>When you need to get in</h2><span>03</span></div>
+<p>An OpenClaw setup, a Codex workstation, or a Mac at home waiting on a permission prompt. AppleSeed gives you the desktop to configure it and approve the prompt yourself.</p>
+<p>You use your existing Mac account and permissions. AppleSeed doesn’t bypass passwords or macOS security controls.</p>
+</section>
+<section class="limits">
+<div class="label"><h2>Know the limits</h2><span>04</span></div>
+<dl><dt>Locked vs. powered off</dt><dd>A normal locked Mac can be reached while the service and Tailscale are running. Standard setup starts after sign-in. AppleSeed cannot power on an offline Mac or unlock FileVault before macOS starts. <a href="https://github.com/eaTurk1/AppleSeed/blob/main/docs/SETUP.md#optional-boot-service-and-power-settings">Optional boot setup →</a></dd>
+<dt>Keep it private</dt><dd>Use private Tailscale Serve. Keep VNC and the owner API private. Only the separate authenticated Web Portal listener may be routed publicly. People near the Mac’s monitors can see the session; privacy covers and virtual mobile displays are not included.</dd>
+<dt>Free and open source</dt><dd>Every feature is included under MIT. Optional tips support development and do not change access. The new platform ports are development builds; review the included setup and validation notes.</dd></dl>
+</section>
+<section id="support" class="field-notes"><div class="label"><h2>Support AppleSeed</h2><span>♥</span></div><p>AppleSeed is free and open source. If it saves you a trip back to your desk, an optional tip can help support development.</p><button class="tip-button" type="button" disabled>Leave a tip</button><p class="fine">The optional Ko-fi tip link will be available after payout setup. Tips will never unlock features or be required to use AppleSeed.</p></section>
+</article>
+<aside class="app-view" aria-label="Real AppleSeed interface"><figure><a href="./appleseed-connect.jpg" aria-label="View the full AppleSeed screenshot"><img src="./appleseed-connect.jpg" alt="Actual AppleSeed client: Mac online, Connect to Mac, Session settings and Connection guide" width="412" height="800"></a><figcaption><span>THE APP / CONNECT SCREEN</span><p>AppleSeed’s shared interface, shown with a demo connection. The native Android app uses these same controls.</p></figcaption></figure><div class="quick-ref"><b>Already connected?</b><span>Unlock · Web Portal</span><p>Directly on the home screen and live toolbar. Every feature included.</p></div></aside>
+</div>
+<footer><span>AppleSeed / Open source</span><div><a href="https://github.com/eaTurk1/AppleSeed/blob/main/SETUP.md">Setup</a><a href="https://github.com/eaTurk1/AppleSeed/blob/main/SECURITY.md">Security</a><a href="https://github.com/eaTurk1/AppleSeed/issues">Issues</a></div><p>Independent app. Not affiliated with Apple, Tailscale, OpenClaw or OpenAI.</p></footer>
+</main>
+</div>
+</body>
+</html>

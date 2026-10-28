@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090a0c">
+  <meta name="description" content="AppleSeed. Private remote access to your Mac.">
+  <title>AppleSeed</title>
+  <link rel="icon" href="/icon.png" type="image/png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+  <script defer src="/free-tools.js"></script>
+</head>
+<body>
+  <header><a class="brand" href="/" aria-label="AppleSeed home"><img src="/icon.png" alt="" width="26" height="26"> AppleSeed</a><span class="private"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 13 4v4c0 3-5 6-5 6S3 11 3 8V4Z"/></svg> PRIVATE</span></header>
+  <main>
+    <section class="intro" id="intro">
+      <div class="seed-scene" aria-hidden="true"><div class="orbit"></div><div class="orbit inner"></div><span class="cross top"></span><span class="cross bottom"></span><span class="cross left"></span><span class="cross right"></span><img class="seed seed-mark" src="/icon.png" alt=""><span class="scene-label">ACCESS / ON YOUR TERMS</span></div>
+      <p class="eyebrow">ONE MAC. ANYWHERE.</p>
+      <h1>Take control<span>.</span></h1>
+      <p class="lead">Your Mac. Always within reach.</p>
+      <div class="device-card">
+        <div class="device-top"><div class="device-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><div><p class="eyebrow">TARGET</p><h2 id="mac-name">Your Mac</h2></div></div><span id="status-pill" class="pill">Checking</span></div>
+        <p id="status-message" class="device-caption" role="status" aria-live="polite">Establishing connection…</p>
+        <button id="connect" class="primary" disabled>Connect to Mac <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13"/></svg></button>
+      </div>
+      <div class="trust"><span><i></i> TAILSCALE ENCRYPTED</span><span><span id="password-status">SESSION PASSWORD</span></span></div>
+      <div id="intro-settings"></div>
+      <details id="help"><summary>Connection guide <span aria-hidden="true">+</span></summary><ol><li>Connect Tailscale on your phone with the same account as this Mac.</li><li>Your Mac must be powered on and online, with Screen Sharing enabled.</li><li>Connect with your Mac account. Sign in or unlock on the live screen.</li></ol><p id="startup-note">Your Mac must be signed in once before this service is available.</p><p>FileVault startup unlocking and waking an offline Mac require a separate recovery path.</p></details>
+    </section>
+    <section id="session" hidden aria-label="Live Mac screen">
+      <div class="session-bar"><div><span class="live-dot"></span><strong id="session-title">Connecting…</strong><p id="session-note" role="status">Preparing your session.</p></div><button id="disconnect" class="secondary">Disconnect</button></div>
+      <div class="desktop-shell">
+        <div id="screen" aria-label="Remote desktop"><div id="framebuffer"></div><div id="pointer-surface" tabindex="0" role="application" aria-label="Remote Mac trackpad. Slide to move the cursor, tap to click, hold to drag, pinch to zoom."></div><svg id="remote-cursor" width="21" height="27" viewBox="0 0 21 27" aria-hidden="true"><path d="M2 1v21l5-5 4 9 4-2-4-9h8Z" fill="white" stroke="#101115" stroke-width="1.6"/></svg><span id="zoom-level">100%</span></div>
+        <nav class="live-toolbar" aria-label="Remote controls">
+          <button id="keyboard-toggle" class="secondary" aria-pressed="false" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 10h1m3 0h1m3 0h1M7 14h10"/></svg><span>Keyboard</span></button>
+          <button id="left-click" class="secondary" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 3 12 9-6 1-3 6Z"/></svg><span>Click</span></button>
+          <button id="drag-toggle" class="secondary" aria-pressed="false" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18m-12-6 3-3 3 3m-9 3-3 3 3 3m12-6 3 3-3 3m-9 3 3 3 3-3"/></svg><span>Drag</span></button>
+          <button id="zoom" class="secondary" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg><span>Fit</span></button>
+          <button id="tools-toggle" class="secondary" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg><span>Tools</span></button>
+        </nav>
+      </div>
+      <div id="keyboard-panel" class="keyboard-panel" hidden><label for="remote-input">Typing on your Mac</label><textarea id="remote-input" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Remote keyboard input" placeholder="Type on Mac…"></textarea><div class="controls"><button id="modifier-command" class="secondary" aria-pressed="false">⌘</button><button id="modifier-control" class="secondary" aria-pressed="false">Ctrl</button><button id="modifier-alt" class="secondary" aria-pressed="false">Option</button><button id="modifier-shift" class="secondary" aria-pressed="false">Shift</button></div><button id="keyboard-more" class="secondary" aria-pressed="false">Keys</button><div id="keyboard-extra" class="essential-controls" hidden><div class="edit-keys"><button id="kbd-tab" class="secondary">Tab</button><button id="kbd-enter" class="secondary">Return ↵</button><button id="kbd-backspace" class="secondary">⌫</button><button id="kbd-escape" class="secondary">Esc</button><button id="kbd-delete" class="secondary">Delete</button></div><div class="arrow-keys" aria-label="Keyboard arrow keys"><button id="kbd-up" class="secondary">↑</button><button id="kbd-left" class="secondary">←</button><button id="kbd-down" class="secondary">↓</button><button id="kbd-right" class="secondary">→</button></div></div></div>
+      <aside id="session-tools" class="session-tools" hidden aria-label="Session tools">
+        <div class="tools-title"><strong>At your fingertips</strong><button id="close-tools" class="secondary" aria-label="Close tools">✕</button></div>
+        <div class="tool-tabs" role="tablist" aria-label="Tools"><button id="tab-controls" role="tab" aria-selected="true">Control</button><button id="tab-display" role="tab" aria-selected="false">Display</button><button id="tab-session" role="tab" aria-selected="false">Session</button><button id="tab-unlock" role="tab" aria-selected="false">Unlock</button></div>
+        <section id="panel-controls" role="tabpanel" aria-label="Control tools"><div class="control-row"><button id="trackpad-toggle" class="secondary" aria-pressed="true" disabled>Trackpad</button><button id="right-click" class="secondary" disabled>Right-click</button><button id="fullscreen" class="secondary" aria-pressed="false" disabled>Fullscreen</button></div><select id="monitor-select" aria-label="Monitor" disabled><option value="all">Shared display</option></select><p id="monitor-note" class="small">Checking shared displays…</p><div class="essential-controls"><div class="edit-keys"><button id="tab-key" class="secondary" disabled>Tab</button><button id="enter-key" class="secondary" disabled>Return ↵</button><button id="backspace" class="secondary" disabled>⌫</button><button id="escape" class="secondary" disabled>Esc</button><button id="key-delete" class="secondary">Delete</button></div><div class="arrow-keys" aria-label="Arrow keys"><button id="key-up" class="secondary">↑</button><button id="key-left" class="secondary">←</button><button id="key-down" class="secondary">↓</button><button id="key-right" class="secondary">→</button></div></div><p class="gesture-guide">Slide to move · Tap to click · Hold to drag<br>Pinch to zoom · Two fingers to pan or scroll</p></section>
+        <section id="panel-display" role="tabpanel" aria-label="Display and sleep" hidden>
+          <div class="display-sections" role="tablist" aria-label="Display controls"><button id="display-timing-tab" role="tab" aria-selected="true">Idle timers</button><button id="display-quick-tab" role="tab" aria-selected="false">Quick actions</button><button id="display-refresh" aria-label="Refresh Mac settings">↻</button></div>
+          <div id="display-timing">
+            <label id="display-source-row" class="display-line">Power source<select id="display-source"></select></label>
+            <label class="display-line" for="display-minutes">Screens off<span class="time-entry"><input id="display-minutes" type="number" min="0" max="1440" inputmode="numeric" aria-label="Screens off after minutes"><span>min</span></span></label>
+            <label class="display-line" for="sleep-minutes">Mac sleeps<span class="time-entry"><input id="sleep-minutes" type="number" min="0" max="1440" inputmode="numeric" aria-label="Mac sleeps after minutes"><span>min</span></span></label>
+            <label class="display-line" for="saver-minutes">Screen saver<span class="time-entry"><input id="saver-minutes" placeholder="Default" type="number" min="0" max="1440" inputmode="numeric" aria-label="Screen saver after minutes"><span>min</span></span></label>
+            <label class="check saver-default"><input id="saver-default" type="checkbox">Use Mac default for screen saver</label>
+            <div class="control-row"><button id="display-apply" class="primary">Apply timers</button><button id="display-mac-settings" class="secondary">Mac settings ↗</button></div>
+            <p class="display-footnote">Idle time, not session duration. A sleeping Mac may go offline.</p>
+          </div>
+          <div id="display-quick" hidden>
+            <label class="display-line" for="display-awake">This session<select id="display-awake"><option value="normal">Normal timing</option><option value="system">Keep Mac awake</option><option value="screens">Mac + screens awake</option></select></label>
+            <div class="display-grid"><button id="display-off" class="secondary">Screens off now</button><button id="display-wake" class="secondary">Wake screens</button><button id="display-saver" class="secondary">Start screen saver</button><button id="display-choose" class="secondary">Choose saver ↗</button></div>
+            <label id="phone-awake-row" class="check"><input id="phone-awake" type="checkbox">Keep phone screen on while using AppleSeed</label>
+            <p class="display-footnote">Awake ends with the session. Screen saver and Mac lock still follow your settings.</p>
+          </div>
+          <p id="display-status" class="display-status">Checking Mac settings…</p>
+        </section>
+        <section id="panel-session" role="tabpanel" aria-label="Session settings" hidden><div id="session-settings"></div></section>
+        <section id="panel-unlock" role="tabpanel" aria-label="Unlock Mac" hidden><button id="wake" class="secondary" disabled>Show login screen</button><form id="typing" class="typing-panel">
+          <label for="screen-password">Unlock your Mac</label><p>Choose your Mac account if needed, then tap Unlock Mac.</p>
+          <label class="check" hidden><input id="focus-confirmed" type="checkbox">Verified by Mac</label>
+          <div class="input-row"><input id="screen-password" type="password" placeholder="Mac password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Mac lock-screen password" disabled><button id="send-password" class="primary" disabled>Unlock Mac <span aria-hidden="true">↵</span></button></div>
+          <p id="unlock-status" class="small" role="status">Checking the Mac lock state…</p>
+        </form></section>
+      </aside>
+    </section>
+  </main>
+  <details id="preferences" class="preferences"><summary>Session settings <span>+</span></summary>
+    <div class="timer-controls"><label class="check"><input id="timer-enabled" type="checkbox" checked> Disconnect timer</label><label class="minutes-label"><input id="timer-minutes" type="number" min="1" max="1440" step="1" value="10" aria-label="Disconnect after minutes"> min</label></div>
+    <p id="timer-note" class="small">10 minutes from connection. Keeps running when you leave.</p>
+    <button id="apply-timer" class="secondary" hidden>Apply timer</button>
+    <div id="remembered-settings" hidden><p class="small" id="saved-note">Passwords can be remembered in this Android app.</p><button id="choose-mac" class="secondary">Change Mac address</button><button id="forget-password" class="secondary" hidden>Forget password</button></div>
+  </details>
+  <dialog id="credentials"><form id="credential-form"><p class="eyebrow">AUTHENTICATE</p><h2>Your Mac. Your key.</h2><p id="credential-note">Use the account allowed in Screen Sharing.</p><label id="username-label" for="username">Mac username<input id="username" name="username" autocomplete="off" autocapitalize="off" spellcheck="false"></label><label for="password">Password<input id="password" name="password" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required></label><label id="remember-label" class="check" hidden><input id="remember-password" type="checkbox"> Remember on this phone</label><p id="remember-note" class="small">For this session only.</p><div class="dialog-buttons"><button id="cancel-auth" type="button" class="secondary">Cancel</button><button class="primary" type="submit">Connect <span aria-hidden="true">↗</span></button></div></form></dialog>
+  <div id="notification" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

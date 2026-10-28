@@ -1,0 +1,29 @@
+{
+  "name": "appleseed",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Free, open-source remote desktop access over Tailscale",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "install-service": "node scripts/service.mjs install",
+    "uninstall-service": "node scripts/service.mjs uninstall",
+    "install-boot-service": "sudo node scripts/system-service.mjs install",
+    "uninstall-boot-service": "sudo node scripts/system-service.mjs uninstall",
+    "build-apk": "node scripts/build-apk.mjs",
+    "install-companion": "node scripts/companion.mjs install",
+    "uninstall-companion": "node scripts/companion.mjs uninstall",
+    "build-mac": "node scripts/companion.mjs build"
+  },
+  "dependencies": {
+    "@novnc/novnc": "1.7.0",
+    "ws": "8.22.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eaTurk1/AppleSeed.git"
+  },
+  "homepage": "https://erhan.ai/appleseed",
+  "funding": "https://erhan.ai/appleseed/#support"
+}

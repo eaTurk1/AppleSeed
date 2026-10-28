@@ -1,0 +1,3 @@
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libgtk-3-0 libnss3 libasound2 libgbm1 libxshmfence1 libx11-xcb1 libxss1 libxtst6 libatk-bridge2.0-0 libdrm2 xvfb xauth dbus-x11 ca-certificates && rm -rf /var/lib/apt/lists/*
+ENTRYPOINT ["xvfb-run","-a","/app/AppleSeed","--no-sandbox","--smoke-test","--smoke-test-host"]
