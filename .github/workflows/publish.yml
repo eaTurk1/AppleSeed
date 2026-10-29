@@ -1,12 +1,17 @@
-name: Publish AppleSeed preview
+name: Publish AppleSeed release
 on:
   pull_request:
   push:
     branches: [main]
   workflow_dispatch:
     inputs:
+      version:
+        description: Reviewed release version
+        required: true
+        default: "2.0.1"
+        type: string
       source_sha256:
-        description: SHA-256 of the reviewed AppleSeed 2.0.0 source archive
+        description: SHA-256 of the reviewed source archive
         required: true
         type: string
 permissions:
@@ -41,10 +46,12 @@ jobs:
       - name: Verify and prepare reviewed source
         env:
           SOURCE_SHA256: ${{ inputs.source_sha256 }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           [[ "$SOURCE_SHA256" =~ ^[a-f0-9]{64}$ ]]
-          curl --fail --location --silent --show-error https://erhan.ai/appleseed/downloads/AppleSeed-Source-2.0.0.tar.gz -o /tmp/appleseed-source.tar.gz
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          curl --fail --location --silent --show-error "https://erhan.ai/appleseed/downloads/AppleSeed-Source-$RELEASE_VERSION.tar.gz" -o /tmp/appleseed-source.tar.gz
           echo "$SOURCE_SHA256  /tmp/appleseed-source.tar.gz" | sha256sum --check
           mkdir /tmp/appleseed-source
           tar -xzf /tmp/appleseed-source.tar.gz -C /tmp/appleseed-source --no-same-owner
@@ -61,7 +68,7 @@ jobs:
           git config user.email 'appleseed@users.noreply.github.com'
           git add .
           if ! git diff --cached --quiet; then
-            git commit -m 'Publish the complete free AppleSeed 2.0.0 source'
+            git commit -m 'Publish the reviewed free AppleSeed source'
             git push origin main
           fi
           echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -83,11 +90,12 @@ jobs:
         shell: bash
         env:
           ASSET: ${{ matrix.asset }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           mkdir package
           curl --fail --location --silent --show-error "https://erhan.ai/appleseed/downloads/$ASSET" -o "$ASSET"
-          curl --fail --location --silent --show-error https://erhan.ai/appleseed/downloads/SHA256SUMS-2.0.0.txt -o SHA256SUMS.txt
+          curl --fail --location --silent --show-error "https://erhan.ai/appleseed/downloads/SHA256SUMS-$RELEASE_VERSION.txt" -o SHA256SUMS.txt
           grep "  $ASSET$" SHA256SUMS.txt | sha256sum --check
           if [[ "$ASSET" == *.zip ]]; then unzip -q "$ASSET" -d package; else tar -xzf "$ASSET" -C package; fi
       - name: Windows UI and host runtime check
@@ -120,18 +128,22 @@ jobs:
         with:
           ref: ${{ needs.source.outputs.head }}
       - name: Verify all reviewed release files
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           mkdir artifacts
           cd artifacts
-          curl --fail --location --silent --show-error https://erhan.ai/appleseed/downloads/SHA256SUMS-2.0.0.txt -o SHA256SUMS-2.0.0.txt
+          curl --fail --location --silent --show-error "https://erhan.ai/appleseed/downloads/SHA256SUMS-$RELEASE_VERSION.txt" -o SHA256SUMS.txt
           while read -r digest file; do
             [[ "$file" =~ ^AppleSeed-[A-Za-z0-9._-]+$ ]]
             curl --fail --location --silent --show-error "https://erhan.ai/appleseed/downloads/$file" -o "$file"
-          done < SHA256SUMS-2.0.0.txt
-          sha256sum --check SHA256SUMS-2.0.0.txt
+          done < SHA256SUMS.txt
+          sha256sum --check SHA256SUMS.txt
+          mv SHA256SUMS.txt "SHA256SUMS-$RELEASE_VERSION.txt"
       - name: Publish free preview release
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          gh release create v2.0.0-preview.1 artifacts/* --target "$(git rev-parse HEAD)" --prerelease --title 'AppleSeed 2.0.0 preview: free and open source' --notes-file CHANGELOG.md
+          gh release create "v$RELEASE_VERSION" artifacts/* --target "$(git rev-parse HEAD)" --prerelease --title "AppleSeed $RELEASE_VERSION: free and open source" --notes-file CHANGELOG.md
