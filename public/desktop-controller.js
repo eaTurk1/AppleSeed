@@ -6,7 +6,7 @@ import { ScreenSettings } from './screen-settings.js';
 
 export class DesktopController {
   constructor(client, hostScreens = [], nativeCall = () => null, options = {}) {
-    this.client = client; this.hostScreens = hostScreens; this.nativeCall = nativeCall;
+    this.client = client; this.hostScreens = hostScreens; this.nativeCall = nativeCall; this.options = options;
     this.$ = id => document.getElementById(id); this.surface = this.$('pointer-surface'); this.stage = this.$('screen');
     this.view = new DesktopViewport(); this.handlers = []; this.held = new Map(); this.fullscreen = null; this.nativeLandscape = nativeCall('capabilities')?.landscape; this.composing = false;
     this.pointer = new PointerGestures(this.view, (x, y, mask, immediate) => this.sendPointer(x, y, mask, immediate), () => this.render());
@@ -52,13 +52,16 @@ export class DesktopController {
     this.listen(this.$('keyboard-toggle'), 'click', () => this.toggleKeyboard());
     this.listen(this.$('keyboard-more'), 'pointerdown', event => event.preventDefault());
     this.listen(this.$('keyboard-more'), 'click', () => { const show = this.$('keyboard-extra').hidden; this.$('keyboard-extra').hidden = !show; this.$('keyboard-more').setAttribute('aria-pressed', String(show)); });
-    this.listen(this.$('fullscreen'), 'click', () => { this.fullscreen = !document.body.classList.contains('remote-fullscreen'); this.updateFullscreen(); });
+    this.mountFullscreenControls();
+    for (const id of ['fullscreen', 'fullscreen-live']) if (this.$(id)) this.listen(this.$(id), 'click', () => this.setFullscreen(!document.body.classList.contains('remote-fullscreen')));
+    if (this.$('exit-fullscreen')) this.listen(this.$('exit-fullscreen'), 'click', () => this.setFullscreen(false));
+    if (this.$('fullscreen-controls')) this.listen(this.$('fullscreen-controls'), 'click', () => this.showFullscreenControls(!document.body.classList.contains('fullscreen-controls-open')));
     this.listen(this.$('tools-toggle'), 'click', () => { this.toggleKeyboard(false); this.$('session-tools').hidden = !this.$('session-tools').hidden; if (!this.$('session-tools').hidden && !this.$('panel-display').hidden) this.screenSettings?.refresh(); });
     this.listen(this.$('close-tools'), 'click', () => this.$('session-tools').hidden = true);
     this.listen(document, 'visibilitychange', () => { if (document.hidden) { this.release(); this.toggleKeyboard(false); } });
     this.listen(window, 'blur', () => this.release());
     this.listen(window, 'resize', () => { this.updateFullscreen(); this.resize(); });
-    this.listen(window, 'appleseed-orientation', event => { this.nativeLandscape = event.detail.landscape; this.fullscreen = null; this.updateFullscreen(); });
+    this.listen(window, 'appleseed-orientation', event => { this.nativeLandscape = event.detail.landscape; this.updateFullscreen(); });
     this.listen(document, 'fullscreenchange', () => { if (!document.fullscreenElement) { this.fullscreen = false; this.updateFullscreen(); } });
     this.listen(client, 'framebufferresize', () => this.updateFrame());
     this.setupIME();
@@ -124,16 +127,52 @@ export class DesktopController {
   updateFullscreen() {
     const mobileBrowser = typeof navigator !== 'undefined' && /Android|iPhone|iPad/.test(navigator.userAgent);
     const landscape = this.nativeLandscape ?? (mobileBrowser && screen.orientation?.type ? screen.orientation.type.startsWith('landscape') : window.innerWidth > window.innerHeight);
-    if (this.lastLandscape !== undefined && this.lastLandscape !== landscape) { this.fullscreen = null; }
     this.lastLandscape = landscape;
     const full = this.fullscreen ?? landscape;
     document.body.classList.toggle('remote-fullscreen', full);
-    this.$('fullscreen').textContent = full ? 'Window' : 'Fullscreen';
+    if (!full) this.showFullscreenControls(false);
+    this.$('fullscreen').textContent = full ? 'Exit full screen' : 'Full screen';
     this.$('fullscreen').setAttribute('aria-pressed', String(full));
+    const live = this.$('fullscreen-live');
+    if (live) { live.setAttribute('aria-pressed', String(full)); live.setAttribute('aria-label', full ? 'Exit full screen' : 'Full screen'); }
     this.nativeCall('fullscreen', { enabled: full });
     // Fullscreen API is optional: CSS always fills the available view, native hides system bars.
     if (!this.nativeCall('capabilities')?.native && this.fullscreen === true && !document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
     else if (this.fullscreen === false && document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  }
+  mountFullscreenControls() {
+    if (!document.createElement || this.$('fullscreen-live')) return;
+    const button = (id, label, path) => {
+      const el = document.createElement('button'); el.id = id; el.type = 'button'; el.className = 'secondary fullscreen-button';
+      el.setAttribute('aria-label', label); el.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg><span>${label}</span>`; return el;
+    };
+    const live = button('fullscreen-live', 'Full screen', 'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5');
+    live.setAttribute('aria-pressed', 'false'); this.$('disconnect').before(live);
+    const controls = document.createElement('nav'); controls.id = 'fullscreen-actions'; controls.setAttribute('aria-label', 'Full screen controls');
+    const exit = button('exit-fullscreen', 'Exit full screen', 'M3 8h5V3m8 0v5h5M8 21v-5H3m18 0h-5v5');
+    const show = button('fullscreen-controls', 'Controls', 'M4 7h16M4 17h16M9 4v6m6 4v6'); show.setAttribute('aria-expanded', 'false');
+    controls.append(exit, show); this.$('session').append(controls);
+    this.fullscreenControls = controls; this.liveFullscreenButton = live;
+  }
+  closeFullscreenPanels() {
+    this.toggleKeyboard(false); this.$('session-tools').hidden = true; this.options.closeUnlock?.();
+  }
+  showFullscreenControls(show) {
+    const previous = document.body.classList.contains('fullscreen-controls-open');
+    document.body.classList.toggle('fullscreen-controls-open', show);
+    const button = this.$('fullscreen-controls');
+    if (button) { button.setAttribute('aria-expanded', String(show)); const label = button.querySelector?.('span'); if (label) label.textContent = show ? 'Hide controls' : 'Controls'; }
+    if (previous && !show) this.closeFullscreenPanels();
+  }
+  setFullscreen(enabled) {
+    this.closeFullscreenPanels(); this.showFullscreenControls(false);
+    this.fullscreen = enabled; this.updateFullscreen(); this.resize();
+  }
+  dismissFullscreen() {
+    if (!document.body.classList.contains('remote-fullscreen')) return false;
+    if (document.body.classList.contains('fullscreen-controls-open')) this.showFullscreenControls(false);
+    else this.setFullscreen(false);
+    return true;
   }
   toggleKeyboard(open = this.$('keyboard-panel').hidden) {
     if (open) this.$('session-tools').hidden = true;
@@ -196,7 +235,8 @@ export class DesktopController {
     this.screenSettings?.destroy();
     this.release(); this.toggleKeyboard(false); this.destroyed = true; cancelAnimationFrame(this.raf);
     this.keyboard.ungrab(); this.observer.disconnect(); this.handlers.forEach(remove => remove());
-    document.body.classList.remove('remote-fullscreen'); this.nativeCall('fullscreen', { enabled: false });
+    document.body.classList.remove('remote-fullscreen'); document.body.classList.remove('fullscreen-controls-open');
+    this.fullscreenControls?.remove(); this.liveFullscreenButton?.remove(); this.nativeCall('fullscreen', { enabled: false });
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
   }
 }

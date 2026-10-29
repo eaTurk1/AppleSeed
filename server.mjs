@@ -50,7 +50,7 @@ export function createApp({ publicURL, allowedLogin, port = 18796, vncPort = 590
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), clipboard-read=(), clipboard-write=()'
   };
   function reply(res, code, data, type = 'text/plain; charset=utf-8') {
-    res.writeHead(code, { ...headers, 'Content-Type': type, ...(type === types['.apk'] ? { 'Content-Disposition': 'attachment; filename="AppleSeed-2.0.0.apk"' } : {}) }); res.end(data);
+    res.writeHead(code, { ...headers, 'Content-Type': type, ...(type === types['.apk'] ? { 'Content-Disposition': 'attachment; filename="AppleSeed-2.0.1.apk"' } : {}) }); res.end(data);
   }
   const server = http.createServer(async (req, res) => {
     if (!authorized(req)) return reply(res, 403, 'This page is limited to the Mac owner’s Tailscale account.');

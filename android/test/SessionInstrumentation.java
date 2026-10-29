@@ -10,6 +10,8 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.view.WindowInsets;
+import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
@@ -46,6 +48,21 @@ public final class SessionInstrumentation extends Instrumentation {
             }
             require(!"true".equals(eval(web, "window.prompt('AppleSeedNative',JSON.stringify({op:'copy-portal-code',code:'not-a-session-code'}))")), "Copy bridge accepted arbitrary text");
             String started = eval(web, "window.prompt('AppleSeedNative',JSON.stringify({op:'session-start',seconds:600}))");
+            stage = "fullscreen window";
+            require("true".equals(eval(web,"window.prompt('AppleSeedNative',JSON.stringify({op:'fullscreen',enabled:true}))")), "Fullscreen request failed");
+            AtomicReference<Boolean> immersive = new AtomicReference<>(false);
+            View firstRoot = (View) field(first,"root");
+            for (int i=0;i<40 && !immersive.get();i++) {
+                runOnMainSync(() -> {
+                    WindowInsets insets = firstRoot.getRootWindowInsets();
+                    immersive.set(insets != null && !insets.isVisible(WindowInsets.Type.statusBars()) && !insets.isVisible(WindowInsets.Type.navigationBars()) && firstRoot.getPaddingTop()==0 && firstRoot.getPaddingBottom()==0);
+                });
+                if(!immersive.get()) SystemClock.sleep(50);
+            }
+            require(immersive.get(), "Fullscreen did not remove system bars and reserved space");
+            require(Boolean.TRUE.equals(field(session,"requestedFullscreen")), "Fullscreen choice was not retained");
+            require("true".equals(eval(web,"window.prompt('AppleSeedNative',JSON.stringify({op:'fullscreen',enabled:false}))")), "Exit fullscreen request failed");
+            require(Boolean.FALSE.equals(field(session,"requestedFullscreen")), "Exit fullscreen was not retained");
             require("true".equals(started), "Native bridge could not start session: " + started + "; url=" + eval(web, "location.href") + "; owner=" + ((java.lang.ref.WeakReference<?>) field(session, "owner")).get());
             Object lifetime = field(session, "lifetime"); long deadline = (long) field(lifetime, "deadline");
             for (String mode : new String[]{"light", "dark", "auto"}) {
@@ -94,7 +111,7 @@ public final class SessionInstrumentation extends Instrumentation {
             getTargetContext().startService(new Intent().setClassName("org.appleseed.remote", "org.appleseed.remote.SessionService").setAction("disconnect"));
             for (int i = 0; i < 50 && !(boolean) field(last, "closed"); i++) SystemClock.sleep(100);
             require((boolean) field(last, "closed"), "Notification Disconnect did not close detached session");
-            result.putString("stream", "Native Android AppleSeed checks passed: Back dispatch without ending session; Light/Dark/Auto persistence and live system-theme changes without session recreation; " + "Copy code and sensitive clipboard flag" + "; invalid/background copy rejection; task removal, Activity release, same page/deadline, background expiry and notification Disconnect.\n");
+            result.putString("stream", "Native Android AppleSeed checks passed: immersive fullscreen and exit; Back dispatch without ending session; Light/Dark/Auto persistence and live system-theme changes without session recreation; " + "Copy code and sensitive clipboard flag" + "; invalid/background copy rejection; task removal, Activity release, same page/deadline, background expiry and notification Disconnect.\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
             result.putString("stream", "FAILED at " + stage + ": " + error + "\n"); finish(Activity.RESULT_CANCELED, result);

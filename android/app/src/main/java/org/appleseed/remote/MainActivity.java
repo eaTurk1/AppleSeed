@@ -47,7 +47,9 @@ public final class MainActivity extends Activity {
         root = new FrameLayout(this); root.setBackgroundColor(BG);
         root.setOnApplyWindowInsetsListener((view, insets) -> {
             if (Build.VERSION.SDK_INT >= 30) {
-                Insets padding = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.ime() | WindowInsets.Type.displayCutout());
+                int insetTypes = WindowInsets.Type.ime();
+                if (!remoteFullscreen()) insetTypes |= WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout();
+                Insets padding = insets.getInsets(insetTypes);
                 view.setPadding(padding.left, padding.top, padding.right, padding.bottom);
             } else view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(), insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
             return insets.consumeSystemWindowInsets();
@@ -165,12 +167,18 @@ public final class MainActivity extends Activity {
             requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 7);
         }
     }
+    private boolean remoteFullscreen() {
+        Boolean requested = remote == null ? null : remote.requestedFullscreen;
+        return remote != null && remote.lifetime.retainWhenHidden() && (requested != null ? requested : getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+    }
     void updateWindowMode() {
         boolean sessionActive = remote != null && remote.lifetime.retainWhenHidden();
-        Boolean requestedFullscreen = remote == null ? null : remote.requestedFullscreen;
         if (sessionActive && getPreferences(MODE_PRIVATE).getBoolean("phoneAwake", false)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        boolean fullscreen = sessionActive && (requestedFullscreen != null ? requestedFullscreen : getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+        boolean fullscreen = remoteFullscreen();
+        WindowManager.LayoutParams layout = getWindow().getAttributes();
+        int cutoutMode = fullscreen ? WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES : WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+        if (layout.layoutInDisplayCutoutMode != cutoutMode) { layout.layoutInDisplayCutoutMode = cutoutMode; getWindow().setAttributes(layout); }
         if (Build.VERSION.SDK_INT >= 30) {
             WindowInsetsController controller = getWindow().getInsetsController();
             if (controller != null) {

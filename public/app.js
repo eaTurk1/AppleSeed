@@ -184,7 +184,7 @@ $('connect').addEventListener('click', async () => {
       forgetCredentials(); clearFields(); memoryState();
       if ($('credentials').open) $('credentials').close();
       $('session-note').textContent = 'Slide to move the cursor. Tap to click. Pinch to zoom.';
-      desktop = new DesktopController(client, hostDisplays, nativeCall, { session: sessionID, notify });
+      desktop = new DesktopController(client, hostDisplays, nativeCall, { session: sessionID, notify, closeUnlock: () => quick.hide() });
       controlIDs.forEach(id => $(id).disabled = false); countdown();
       const unlockSession = sessionID;
       unlock = new SafeUnlock({ visible: () => connected && appVisible && !document.hidden && !$('panel-unlock').hidden && sessionID === unlockSession, changed: typingState, request: async (value, { signal } = {}) => {
@@ -290,6 +290,7 @@ window.appleSeedBack = () => {
   if (!$('session-tools').hidden) { $('session-tools').hidden = true; unlock?.cancelPending(); return true; }
   if (quick.visible) { quick.hide(); return true; }
   if (!$('keyboard-panel').hidden) { desktop?.toggleKeyboard(false); return true; }
+  if (desktop?.dismissFullscreen?.()) return true;
   if (rfb && !connected) { disconnect(); return true; }
   return false;
 };

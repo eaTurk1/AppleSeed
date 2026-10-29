@@ -1,3 +1,9 @@
+# AppleSeed 2.0.1
+
+- Add Full screen beside Disconnect while viewing a desktop.
+- Hide app toolbars and Android system bars for edge-to-edge viewing, with Exit full screen and Controls always available.
+- Keep the selected monitor and zoom when entering, leaving or rotating fullscreen. Android Back closes controls, then exits fullscreen before leaving the app.
+
 # AppleSeed 2.0.0 preview
 
 - One complete, free, MIT-licensed AppleSeed edition. All Tools, monitors, session controls, Mac unlock and Web Portal access are included.

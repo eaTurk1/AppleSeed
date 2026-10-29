@@ -59,3 +59,28 @@ body:has(.unlock-dock input:focus) .session-bar,body:has(.unlock-dock input:focu
 }
 
 .support-link{display:block;text-align:center;color:var(--muted);font-size:11px;padding:12px 4px;text-underline-offset:3px}
+
+/* Full-screen viewing leaves only two small controls over the desktop. */
+.session-bar>div{min-width:0;margin-right:auto}
+.fullscreen-button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:8px 10px;font-size:11px;white-space:nowrap}
+.fullscreen-button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+#fullscreen-actions{display:none}
+body.remote-fullscreen main{padding:0}
+body.remote-fullscreen #session{gap:0}
+body.remote-fullscreen .session-bar{display:none}
+body.remote-fullscreen #screen{border:0;border-radius:0}
+body.remote-fullscreen .live-toolbar,body.remote-fullscreen .monitor-strip{display:none}
+body.remote-fullscreen #fullscreen-actions{display:contents}
+body.remote-fullscreen #fullscreen-actions button{position:fixed;z-index:9;min-height:44px;background:#101115dc;color:#fff;border:1px solid #ffffff40;border-radius:22px;box-shadow:0 2px 12px #0003;backdrop-filter:blur(10px)}
+body.remote-fullscreen #exit-fullscreen{top:max(8px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));font-size:10px;padding:8px 12px}
+body.remote-fullscreen #fullscreen-controls{bottom:max(8px,env(safe-area-inset-bottom));right:max(8px,env(safe-area-inset-right));padding:8px 14px}
+body.remote-fullscreen #zoom-level{right:auto;left:max(8px,env(safe-area-inset-left))}
+body.remote-fullscreen.fullscreen-controls-open .desktop-shell{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+body.remote-fullscreen.fullscreen-controls-open .live-toolbar{display:grid;max-width:660px;width:100%;padding-left:4px;padding-right:4px;background:var(--bg)}
+body.remote-fullscreen.fullscreen-controls-open .monitor-strip{display:flex}
+body.remote-fullscreen .session-tools{bottom:calc(116px + env(safe-area-inset-bottom));max-height:calc(100dvh - 172px - env(safe-area-inset-bottom))}
+body.remote-fullscreen .keyboard-panel{bottom:calc(116px + env(safe-area-inset-bottom))}
+body.remote-fullscreen #notification{bottom:calc(60px + env(safe-area-inset-bottom))}
+body.remote-fullscreen .unlock-dock{padding:8px;background:var(--bg)}
+body.remote-fullscreen.fullscreen-controls-open .live-toolbar .secondary{flex-direction:column;gap:3px;font-size:9px;padding:4px 2px}
+body.remote-fullscreen.fullscreen-controls-open .desktop-shell{padding-top:56px}

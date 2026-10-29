@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 if (process.argv[2]) throw new Error('Usage: node scripts/build-apk.mjs. AppleSeed has one complete free edition.');
-const version = '2.0.0', versionCode = 19;
+const version = '2.0.1', versionCode = 20;
 const appName = 'AppleSeed';
 const sdk = process.env.ANDROID_HOME || path.join(os.homedir(), 'Library/Android/sdk');
 const jdk = process.env.JAVA_HOME || '/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home';

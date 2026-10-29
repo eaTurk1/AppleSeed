@@ -56,6 +56,36 @@ test('monitor changes move the viewport/cursor into that display; rotation uses 
   f.controller.destroy(); assert.equal(f.get('pointer-surface').events.get('pointerdown').length, 0);
 });
 
+test('direct fullscreen and Exit preserve zoom and selected monitor, including across rotation', () => {
+  const f = fixture(); f.controller.selectMonitor('2'); f.controller.view.zoomAt(4, 200, 150);
+  const scale = f.controller.view.scale;
+  f.get('session-tools').hidden = false;
+  f.get('fullscreen-live').emit('click');
+  assert.equal(f.get('session-tools').hidden, true);
+  assert.ok(f.classes.has('remote-fullscreen'));
+  assert.equal(f.controller.view.crop.x, 1600); assert.equal(f.controller.view.scale, scale);
+  f.window.emit('appleseed-orientation', {detail:{landscape:true}});
+  f.window.emit('appleseed-orientation', {detail:{landscape:false}});
+  assert.ok(f.classes.has('remote-fullscreen'), 'An explicit fullscreen choice survives rotation');
+  f.get('exit-fullscreen').emit('click');
+  assert.ok(!f.classes.has('remote-fullscreen'));
+  f.window.emit('appleseed-orientation', {detail:{landscape:true}});
+  assert.ok(!f.classes.has('remote-fullscreen'), 'Exit remains respected after rotation');
+  assert.equal(f.controller.view.scale, scale); f.controller.destroy();
+});
+
+test('fullscreen controls remain available and Back hides them before exiting the desktop view', () => {
+  const f = fixture(); f.controller.setFullscreen(true);
+  f.get('fullscreen-controls').emit('click');
+  assert.equal(f.get('fullscreen-controls').attrs['aria-expanded'], 'true');
+  f.get('keyboard-toggle').emit('click'); assert.equal(f.get('keyboard-panel').hidden, false);
+  assert.equal(f.controller.dismissFullscreen(), true);
+  assert.equal(f.get('keyboard-panel').hidden, true); assert.ok(f.classes.has('remote-fullscreen'));
+  assert.equal(f.get('fullscreen-controls').attrs['aria-expanded'], 'false');
+  assert.equal(f.controller.dismissFullscreen(), true); assert.ok(!f.classes.has('remote-fullscreen'));
+  assert.equal(f.controller.dismissFullscreen(), false); f.controller.destroy();
+});
+
 test('keyboard extra keys preserve held modifiers and release them when the keyboard closes', () => {
   const f = fixture();
   f.get('keyboard-toggle').emit('click');

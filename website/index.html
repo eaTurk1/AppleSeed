@@ -14,10 +14,10 @@
 <img class="seed" src="./icon.png" alt="AppleSeed’s red tree growing out of an iMac" width="260" height="260">
 <p class="identity-note">Your desktop.<br> Your account.<br> Your way back in.</p>
 <nav aria-label="Page"><a href="#downloads">Get AppleSeed <span>↓</span></a><a href="#setup">Set it up <span>↳</span></a><a href="https://github.com/eaTurk1/AppleSeed">GitHub repository <span>↗</span></a></nav>
-<div class="edition"><span>2.0 / PREVIEW</span><span>FREE · OPEN SOURCE</span></div>
+<div class="edition"><span>2.0.1 / PREVIEW</span><span>FREE · OPEN SOURCE</span></div>
 </aside>
 <main id="content">
-<header class="mast"><span>MAC / WINDOWS / LINUX / ANDROID / iOS</span><span>V2.0</span></header>
+<header class="mast"><span>MAC / WINDOWS / LINUX / ANDROID / iOS</span><span>V2.0.1</span></header>
 <div class="workspace">
 <article class="manual">
 <section class="opening">
@@ -28,17 +28,17 @@
 </section>
 <section id="downloads" class="downloads" aria-label="Downloads">
 <div class="label"><h2>Get AppleSeed</h2><span>01</span></div>
-<a class="package" href="./downloads/AppleSeed-2.0.0.apk"><span><b>Android</b><small>Signed APK · Android 9+ · all features</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
-<a class="package" href="./downloads/AppleSeed-Mac-2.0.0-arm64.zip"><span><b>Mac companion</b><small>Apple silicon · macOS 13+ · private host</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
+<a class="package" href="./downloads/AppleSeed-2.0.1.apk"><span><b>Android</b><small>Signed APK · Android 9+ · all features</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
+<a class="package" href="./downloads/AppleSeed-Mac-2.0.1-arm64.zip"><span><b>Mac companion</b><small>Apple silicon · macOS 13+ · private host</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
 <a class="package" href="./downloads/AppleSeed-Windows-2.0.0-x64.zip"><span><b>Windows</b><small>Portable x64 · client and VNC host bridge · development build</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
 <a class="package" href="./downloads/AppleSeed-Linux-2.0.0-x64.tar.gz"><span><b>Linux</b><small>Portable x64 · client and VNC host bridge · development build</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
 <a class="package" href="./downloads/AppleSeed-Linux-2.0.0-arm64.tar.gz"><span><b>Linux ARM64</b><small>Portable ARM64 · client and VNC host bridge · development build</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
 <a class="package" href="./downloads/AppleSeed-iOS-2.0.0-unsigned.zip"><span><b>iPhone &amp; iPad</b><small>Unsigned device build and Xcode project · signing required</small></span><span class="download-symbol" aria-hidden="true">↓</span></a>
 <p class="fine">The iOS download is for building/signing in Xcode. It is not an App Store or TestFlight installation. Browser access is also available on iPhone and iPad.</p>
-<a class="inline-link" href="./downloads/AppleSeed-Source-2.0.0.tar.gz">Download the complete MIT-licensed source ↗</a>
+<a class="inline-link" href="./downloads/AppleSeed-Source-2.0.1.tar.gz">Download the complete MIT-licensed source ↗</a>
 <p class="dependency"><b>Tailscale is required on both devices.</b><br>Use the same Tailscale user identity on your host and client. The optional public Web Portal can pair an approved browser without Tailscale.</p>
 <p class="fine">Mac build: ad-hoc signed, not Apple-notarized. Review the release before allowing its first launch in macOS.</p>
-<a class="inline-link" href="./downloads/SHA256SUMS-2.0.0.txt">Download checksums ↗</a>
+<a class="inline-link" href="./downloads/SHA256SUMS-2.0.1.txt">Download checksums ↗</a>
 </section>
 <section id="setup" class="setup">
 <div class="label"><h2>The first connection</h2><span>02</span></div>
@@ -54,7 +54,7 @@
 <li>Open AppleSeed and paste the address copied from the Mac. It looks like <code>https://my-mac.my-tailnet.ts.net:9447</code>.</li>
 <li>Connect with the Mac account you allowed in Screen Sharing. Choose <b>Remember on this phone</b> to keep the password encrypted on this device.</li>
 </ol><p>You can change the Mac address in Session settings.</p></div></details>
-<details><summary><span class="step-marker">C</span>Unlock &amp; use it <span class="expand">+</span></summary><div class="instruction"><p>Choose <b>Unlock Mac</b> from the opening screen, or <b>Unlock</b> in the live toolbar. Select your Mac account if needed, then tap the button in the strip below the desktop image. Enable AppleSeed in macOS Accessibility for the secure-field shortcut.</p><p>Slide to move the cursor, tap to click, hold and slide to drag, pinch to zoom, and rotate a phone for fullscreen. Monitor controls, Keyboard, stream quality and optional timers are included.</p><p>Android retains the session when you leave the app. iOS may suspend networking in the background. Network loss, host sleep or process termination can interrupt any client.</p></div></details>
+<details><summary><span class="step-marker">C</span>Unlock &amp; use it <span class="expand">+</span></summary><div class="instruction"><p>Choose <b>Unlock Mac</b> from the opening screen, or <b>Unlock</b> in the live toolbar. Select your Mac account if needed, then tap the button in the strip below the desktop image. Enable AppleSeed in macOS Accessibility for the secure-field shortcut.</p><p>Slide to move the cursor, tap to click, hold and slide to drag, pinch to zoom, and rotate a phone for fullscreen. Tap <b>Full screen</b> beside Disconnect for edge-to-edge viewing. Use <b>Controls</b> to reveal the toolbar, or <b>Exit full screen</b> to return. Monitor controls, Keyboard, stream quality and optional timers are included.</p><p>Android retains the session when you leave the app. iOS may suspend networking in the background. Network loss, host sleep or process termination can interrupt any client.</p></div></details>
 <details><summary><span class="step-marker">D</span>Windows &amp; Linux hosts <span class="expand">+</span></summary><div class="instruction"><p>Extract the desktop app and open it. To connect to a Mac, paste its private Tailscale address. To share the Windows or Linux computer, install a password-protected VNC server bound to localhost, then expand <b>Share this computer</b> in AppleSeed.</p><p>Linux Wayland support depends on the VNC server and compositor. Mac secure-field Unlock and macOS display settings are Mac-specific. On other hosts, use Keyboard for OS sign-in.</p></div></details>
 <details><summary><span class="step-marker">↗</span>Web Portal <span class="expand">+</span></summary><div class="instruction"><p>Open <b>Web Portal</b> directly from the opening screen or live toolbar. Enable it for a chosen duration and copy the one-use code. On the other computer, visit your configured <code>/remote</code> URL and enter that code. Two browser windows can show separate monitors.</p><p>The public route stays unavailable until you enable it, and Disable revokes access immediately. HTTPS reverse-proxy hosting is separate setup. The owner API and VNC remain private.</p><a class="inline-link" href="./remote">Open this Mac’s Web Portal ↗</a></div></details>
 </section>

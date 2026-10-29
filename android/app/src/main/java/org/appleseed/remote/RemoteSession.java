@@ -105,7 +105,6 @@ final class RemoteSession {
         }
     }
     void orientation(boolean landscape) {
-        requestedFullscreen = null;
         if (web != null && pageReady) web.evaluateJavascript("window.dispatchEvent(new CustomEvent('appleseed-orientation',{detail:{landscape:" + landscape + "}}));", null);
     }
     private void showError(String title, String message) {

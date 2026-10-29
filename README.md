@@ -29,6 +29,8 @@ The new Windows, Linux and iOS ports are development builds. Build verification 
 
 **Unlock** is on the opening screen and live toolbar. It opens a compact strip below the Mac image so the login screen stays visible. Choose your account if macOS shows multiple accounts, then tap **Unlock Mac**. Each submission checks the Mac's current lock state and fills only a secure field owned by Apple's login process. Delayed video cannot authorize password entry into an unlocked desktop app. Enable AppleSeed in macOS Accessibility first. Windows/Linux hosts use their normal remote keyboard for OS sign-in; the Mac shortcut is not offered there.
 
+**Full screen** is beside Disconnect while viewing your desktop. It hides the app toolbars and phone system bars. Use the small **Controls** button for the toolbar, or **Exit full screen** to return. Your monitor selection and zoom stay intact.
+
 ## Windows and Linux hosts
 
 Open the desktop app, expand **Share this computer**, and follow [the host setup](docs/DESKTOP.md). AppleSeed bridges an existing local VNC server through private Tailscale Serve. It does not install a VNC service, change account security, or open a public VNC port. Keep the desktop app running in its tray while sharing.
