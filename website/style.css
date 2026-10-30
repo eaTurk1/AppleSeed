@@ -7,4 +7,4 @@
 
 .package-unavailable{background:#1b1b1b;color:var(--ink);border:1px solid var(--line);margin-top:10px}.coming-soon{font:9px/1.5 ui-monospace,monospace;color:var(--muted);max-width:65px;text-align:right}
 
-.tip-button{border:1px solid currentColor;border-radius:999px;padding:11px 22px;background:transparent;color:inherit;font:inherit}.tip-button:disabled{opacity:.55;cursor:default}
+.tip-button{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:11px 22px;background:transparent;color:inherit;font:inherit;text-decoration:none}.tip-button:hover{color:#ff6677}.tip-button:focus-visible{outline:2px solid #ff6677;outline-offset:4px}
