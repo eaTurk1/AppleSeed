@@ -2,7 +2,7 @@
 <h1 align="center">AppleSeed</h1>
 <p align="center">Free, open-source remote desktop access over Tailscale.</p>
 
-AppleSeed has one edition. Every feature is included: remote desktop, monitor switching, keyboard and trackpad control, pinch zoom, Auto/Quality/Speed streaming, custom session timers, secure Mac unlock, display controls where supported, and an optional browser Web Portal.
+AppleSeed has one edition. Every feature is included: remote desktop, monitor switching, keyboard and trackpad control, pinch zoom, Auto/Quality/Speed streaming, custom session timers, secure Mac unlock, app/window and Chromium browser-tab switching on Mac, display controls where supported, and an optional browser Web Portal.
 
 [Downloads and setup](https://erhan.ai/appleseed) · [Releases](https://github.com/eaTurk1/AppleSeed/releases) · [Build from source](docs/BUILDING.md) · [Optional support](https://erhan.ai/appleseed/#support)
 
@@ -30,6 +30,14 @@ The new Windows, Linux and iOS ports are development builds. Build verification 
 **Unlock** is on the opening screen and live toolbar. It opens a compact strip below the Mac image so the login screen stays visible. Choose your account if macOS shows multiple accounts, then tap **Unlock Mac**. Each submission checks the Mac's current lock state and fills only a secure field owned by Apple's login process. Delayed video cannot authorize password entry into an unlocked desktop app. Enable AppleSeed in macOS Accessibility first. Windows/Linux hosts use their normal remote keyboard for OS sign-in; the Mac shortcut is not offered there.
 
 **Full screen** is beside Disconnect while viewing your desktop. It hides the app toolbars and phone system bars. Use the small **Controls** button for the toolbar, or **Exit full screen** to return. Your monitor selection and zoom stay intact.
+
+## Apps, windows and browser tabs
+
+Tap **Apps** in the live toolbar, or swipe upward with three fingers on the desktop. Tap an app name to bring it forward. Expand an app to choose one of its windows. Chrome, Edge, Brave, Chromium and Vivaldi expand into their tabs, labeled by browser window. Tap a tab to activate that exact tab. AppleSeed follows the selected window to its monitor when that display is included in the shared desktop.
+
+Install the 2.1.0 Mac companion and update its service along with the APK. Window selection uses macOS Accessibility. Browser tabs use macOS Automation permission for the selected browser. If access is missing, **Request browser access on Mac** opens the system approval request. Approve it on the Mac, then collapse and expand the browser to reload. You do not need to enable browser page JavaScript through Apple Events.
+
+The switcher requires an unlocked Mac and a current private owner session. Titles and app icons stay in memory and are cleared from the phone when the sheet closes or the app backgrounds. No browser URLs, page contents, history, passwords or cookies are read. The public Web Portal does not expose the app-list API. Other browsers, including Safari, currently offer window switching rather than individual tabs.
 
 ## Windows and Linux hosts
 

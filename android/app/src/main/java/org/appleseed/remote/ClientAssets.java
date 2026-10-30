@@ -10,7 +10,7 @@ public final class ClientAssets {
         try {
             String path = new URI(url).getRawPath();
             switch (path) {
-                case "/app.js": case "/free-tools.js": case "/appearance.js": case "/quick-access.js": case "/safe-unlock.js": case "/portal-control.js": case "/monitor-strip.js": case "/stream-quality.js": case "/desktop-model.js": case "/desktop-controller.js": case "/apple-rfb.js": case "/style.css":
+                case "/app-switcher.js": case "/app.js": case "/free-tools.js": case "/appearance.js": case "/quick-access.js": case "/safe-unlock.js": case "/portal-control.js": case "/monitor-strip.js": case "/stream-quality.js": case "/desktop-model.js": case "/desktop-controller.js": case "/apple-rfb.js": case "/style.css":
                     return "client" + path;
                 default: return null;
             }

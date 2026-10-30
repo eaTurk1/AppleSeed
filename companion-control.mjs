@@ -12,7 +12,7 @@ export function companionCommand(command) {
     socket.on('connect', () => socket.write(JSON.stringify(command) + '\n'));
     socket.on('data', chunk => {
       data += chunk;
-      if (Buffer.byteLength(data) > 65536) return finish(new Error('Invalid companion response.'));
+      if (Buffer.byteLength(data) > 2 * 1024 * 1024) return finish(new Error('Invalid companion response.'));
       if (data.includes('\n')) { try { finish(null, JSON.parse(data.slice(0, data.indexOf('\n')))); } catch { finish(new Error('Invalid companion response.')); } }
     });
     socket.on('end', () => { if (!finished) finish(new Error('The Mac companion ended the request.')); });

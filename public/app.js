@@ -23,7 +23,7 @@ const toolsAvailable = true;
 const quick = mountQuickAccess({ tools: toolsAvailable, connected: () => connected, connecting: () => !!rfb,
   connect: () => { if ($('connect').disabled) return false; $('connect').click(); return true; },
   manualLogin: () => { desktop?.toggleKeyboard(true); notify('Choose the operating system password field and use Keyboard to sign in.'); },
-  beforeOpen: () => desktop?.toggleKeyboard(false), onHide: () => nativeCall('keyboard', { enabled: false }),
+  beforeOpen: () => { desktop?.appSwitcher?.close(); desktop?.toggleKeyboard(false); }, onHide: () => nativeCall('keyboard', { enabled: false }),
   cancelUnlock: () => unlock?.cancelPending(), refreshUnlock: () => unlock?.refresh(), notify });
 const controlIDs = ['wake', 'tab-key', 'enter-key', 'backspace', 'escape', 'zoom', 'keyboard-toggle', 'trackpad-toggle', 'left-click', 'right-click', 'drag-toggle', 'fullscreen', 'tools-toggle'];
 function nativeCall(op, value = {}) {

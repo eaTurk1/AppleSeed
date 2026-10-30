@@ -1,3 +1,12 @@
+# AppleSeed 2.1.0
+
+- Add Apps to the live toolbar and a three-finger upward swipe to open it.
+- Show running Mac applications with icons. Bring an app forward or expand it to select a window.
+- Expand Chrome, Edge, Brave, Chromium and Vivaldi into their open tabs across browser windows. Selection uses stable tab IDs and fails safely when a tab has closed or moved.
+- Follow the selected window to its shared monitor. Keep the existing view when that monitor is unavailable.
+- Add app/tab filtering and explicit Automation-permission guidance. Clear titles on close or background; keep owner controls private and unavailable while the Mac is locked.
+- Keep unlock checks and password entry separate from app switching. Browser operations cannot block the companion's unlock request queue.
+
 # AppleSeed 2.0.1
 
 - Add Full screen beside Disconnect while viewing a desktop.

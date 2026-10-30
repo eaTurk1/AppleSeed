@@ -14,7 +14,7 @@ import { createTravelPortal } from './travel-portal.mjs';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.apk': 'application/vnd.android.package-archive' };
 
-export function createApp({ publicURL, allowedLogin, port = 18796, vncPort = 5900, portalURL, portalAuthenticate, hostPlatform = 'darwin', sessionMs = 10 * 60_000, powerCommand = screenCommand, unlockCommand = companionCommand, deviceName = os.hostname().replace(/\.local$/, ''), accountName = os.userInfo().username, onSessionClose = () => {} } = {}) {
+export function createApp({ publicURL, allowedLogin, port = 18796, vncPort = 5900, portalURL, portalAuthenticate, hostPlatform = 'darwin', sessionMs = 10 * 60_000, powerCommand = screenCommand, unlockCommand = companionCommand, appsCommand = companionCommand, deviceName = os.hostname().replace(/\.local$/, ''), accountName = os.userInfo().username, onSessionClose = () => {} } = {}) {
   const portal = createTravelPortal({ publicURL: portalURL, vncPort, ...(portalAuthenticate ? { authenticate: portalAuthenticate } : {}) });
   const external = publicURL ? new URL(publicURL) : null;
   const localHosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`]);
@@ -50,7 +50,7 @@ export function createApp({ publicURL, allowedLogin, port = 18796, vncPort = 590
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), clipboard-read=(), clipboard-write=()'
   };
   function reply(res, code, data, type = 'text/plain; charset=utf-8') {
-    res.writeHead(code, { ...headers, 'Content-Type': type, ...(type === types['.apk'] ? { 'Content-Disposition': 'attachment; filename="AppleSeed-2.0.1.apk"' } : {}) }); res.end(data);
+    res.writeHead(code, { ...headers, 'Content-Type': type, ...(type === types['.apk'] ? { 'Content-Disposition': 'attachment; filename="AppleSeed-2.1.0.apk"' } : {}) }); res.end(data);
   }
   const server = http.createServer(async (req, res) => {
     if (!authorized(req)) return reply(res, 403, 'This page is limited to the Mac owner’s Tailscale account.');
@@ -98,6 +98,30 @@ export function createApp({ publicURL, allowedLogin, port = 18796, vncPort = 590
         return reply(res, result.ok ? 200 : 422, JSON.stringify(result), types['.json']);
       } catch { return reply(res, 503, JSON.stringify({ ok: false, state: 'unknown', ready: false, error: 'Update or start the AppleSeed Mac companion for safe unlock.' }), types['.json']); }
       finally { command.password = ''; value.password = ''; }
+    }
+    if (pathname === '/api/apps' && req.method === 'POST') {
+      if (!originAllowed(req)) return reply(res, 403, 'Forbidden');
+      if (hostPlatform !== 'darwin') return reply(res, 422, JSON.stringify({ok:false,error:'Apps and browser tabs currently require a Mac host.'}), types['.json']);
+      if (req.headers['content-type'] !== 'application/json') return reply(res, 415, 'JSON required');
+      let body = '', bytes = 0, value;
+      try {
+        for await (const chunk of req) { bytes += chunk.length; if (bytes > 2048) return reply(res, 413, 'Too large'); body += chunk; }
+        value = JSON.parse(body);
+      } catch { return reply(res, 400, 'Bad request'); }
+      if (!value || typeof value !== 'object' || Array.isArray(value) || !['list','activate','tabs','tab-activate','browser-permission','windows','window-activate'].includes(value.op)) return reply(res, 400, 'Invalid app action');
+      const session = currentSession;
+      if (!session || session.id !== value.session) return reply(res, 409, 'Session unavailable');
+      const token = v => typeof v === 'string' && /^[a-f0-9-]{36}$/i.test(v);
+      if ((value.op !== 'list' && !token(value.app)) || (value.op === 'tab-activate' && !token(value.tab)) || (value.op === 'window-activate' && !token(value.window))) return reply(res, 400, 'Invalid app reference');
+      const command = {op:`apps-${value.op}`};
+      if (value.op !== 'list') command.app = value.app;
+      if (value.op === 'tab-activate') command.tab = value.tab;
+      if (value.op === 'window-activate') command.window = value.window;
+      try {
+        const result = await appsCommand(command);
+        if (session !== currentSession) return reply(res, 409, 'Session ended');
+        return reply(res, result.ok ? 200 : 422, JSON.stringify(result), types['.json']);
+      } catch { return reply(res, 503, JSON.stringify({ok:false,error:'Update or start the AppleSeed Mac companion to use Apps.'}), types['.json']); }
     }
     if (pathname === '/api/screen' && req.method === 'POST') {
       if (hostPlatform !== 'darwin') return reply(res, 422, JSON.stringify({ok:false,error:'Set display and sleep timing in this computer’s operating system.'}), types['.json']);
@@ -151,7 +175,7 @@ export function createApp({ publicURL, allowedLogin, port = 18796, vncPort = 590
     }
     let filename;
     if (pathname === '/') filename = path.join(root, 'public/index.html');
-    else if (['/app.js', '/appearance.js', '/quick-access.js', '/safe-unlock.js', '/portal-control.js', '/monitor-strip.js', '/stream-quality.js', '/free-tools.js', '/apple-rfb.js', '/desktop-model.js', '/desktop-controller.js', '/screen-settings.js', '/style.css', '/icon.svg', '/icon.png', '/manifest.json', '/AppleSeed.apk'].includes(pathname)) filename = path.join(root, 'public', pathname);
+    else if (['/app.js', '/appearance.js', '/quick-access.js', '/safe-unlock.js', '/portal-control.js', '/monitor-strip.js', '/stream-quality.js', '/free-tools.js', '/apple-rfb.js', '/desktop-model.js', '/desktop-controller.js', '/app-switcher.js', '/screen-settings.js', '/style.css', '/icon.svg', '/icon.png', '/manifest.json', '/AppleSeed.apk'].includes(pathname)) filename = path.join(root, 'public', pathname);
     else if (pathname.startsWith('/novnc/')) {
       let relative;
       try { relative = decodeURIComponent(pathname.slice(7)); } catch { return reply(res, 400, 'Bad path'); }

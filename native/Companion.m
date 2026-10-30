@@ -13,6 +13,8 @@ static BOOL unlocked(void) {
  NSDictionary *session = CFBridgingRelease(CGSessionCopyCurrentDictionary());
  return session && [session[@"kCGSSessionOnConsoleKey"] boolValue] && ![session[@"CGSSessionScreenIsLocked"] boolValue];
 }
+#import "AppSwitcher.h"
+
 @interface SeedCompanion : NSObject <NSApplicationDelegate>
 @property(copy) NSString *socketPath;
 @property int listener;
@@ -20,6 +22,7 @@ static BOOL unlocked(void) {
 @property BOOL settingUp;
 @property(strong) SeedScreenSettings *screenSettings;
 @property(strong) SeedSafeUnlock *safeUnlock;
+@property(strong) SeedAppSwitcher *appSwitcher;
 @end
 @implementation SeedCompanion
 - (NSString *)runtime { return [NSBundle.mainBundle.resourcePath stringByAppendingPathComponent:@"runtime"]; }
@@ -75,7 +78,7 @@ static BOOL unlocked(void) {
  return errorResult(@"Unknown display action.");
 }
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
- self.screenSettings=[SeedScreenSettings new]; self.safeUnlock=[SeedSafeUnlock new]; [self makeMenu];
+ self.screenSettings=[SeedScreenSettings new]; self.safeUnlock=[SeedSafeUnlock new]; self.appSwitcher=[SeedAppSwitcher new]; [self makeMenu];
  [NSTimer scheduledTimerWithTimeInterval:10 repeats:YES block:^(NSTimer *timer) {
   if (self.screenSettings.session && NSDate.date.timeIntervalSince1970-self.screenSettings.lease>120) [self.screenSettings end];
  }];
@@ -96,18 +99,22 @@ static BOOL unlocked(void) {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         while (YES) @autoreleasepool {
             int client = accept(self.listener, NULL, NULL); if (client < 0) break;
-            uid_t uid; gid_t gid; if (getpeereid(client, &uid, &gid) || uid != getuid()) { close(client); continue; }
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY,0), ^{ @autoreleasepool {
+            uid_t uid; gid_t gid; if (getpeereid(client, &uid, &gid) || uid != getuid()) { close(client); return; }
             int noPipe = 1; setsockopt(client, SOL_SOCKET, SO_NOSIGPIPE, &noPipe, sizeof(noPipe));
             struct timeval timeout = {3,0}; setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)); setsockopt(client, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
             NSMutableData *data = [NSMutableData data]; char buffer[1024]; BOOL complete = NO;
             while (data.length < 8192) { ssize_t n = read(client, buffer, sizeof(buffer)); if (n <= 0) break; [data appendBytes:buffer length:n]; if (memchr(buffer, '\n', n)) { complete = YES; break; } }
             NSDictionary *request = complete ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
             __block NSDictionary *response;
-            dispatch_sync(dispatch_get_main_queue(), ^{ @try { response = [request isKindOfClass:NSDictionary.class] ? [self handle:request] : errorResult(@"Invalid request."); } @catch (NSException *exception) { response = errorResult(@"macOS could not complete this display action."); } });
+            if ([request isKindOfClass:NSDictionary.class] && [request[@"op"] isKindOfClass:NSString.class] && [request[@"op"] hasPrefix:@"apps-"]) {
+             @try { response=[self.appSwitcher handle:request]; } @catch(NSException *e) { response=errorResult(@"App switching could not complete. Refresh Apps."); }
+            } else dispatch_sync(dispatch_get_main_queue(), ^{ @try { response = [request isKindOfClass:NSDictionary.class] ? [self handle:request] : errorResult(@"Invalid request."); } @catch (NSException *exception) { response = errorResult(@"macOS could not complete this display action."); } });
             NSData *bytes = [NSJSONSerialization dataWithJSONObject:response options:0 error:nil];
             const char *p = bytes.bytes; NSUInteger left = bytes.length;
             while (left) { ssize_t n = write(client, p, left); if (n <= 0) break; p += n; left -= n; }
             write(client, "\n", 1); close(client);
+            } });
         }
     });
     for (NSNumber *signalNumber in @[@(SIGTERM), @(SIGINT)]) {

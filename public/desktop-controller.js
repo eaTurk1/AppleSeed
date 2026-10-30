@@ -1,7 +1,8 @@
 import { MonitorStrip } from './monitor-strip.js';
 import Keyboard from '/novnc/core/input/keyboard.js';
 import Keysyms from '/novnc/core/input/keysymdef.js';
-import { DesktopViewport, PointerGestures, availableMonitors } from './desktop-model.js';
+import { DesktopViewport, PointerGestures, availableMonitors, AppsGesture } from './desktop-model.js';
+import { AppSwitcher } from './app-switcher.js';
 import { ScreenSettings } from './screen-settings.js';
 
 export class DesktopController {
@@ -11,6 +12,7 @@ export class DesktopController {
     this.view = new DesktopViewport(); this.handlers = []; this.held = new Map(); this.fullscreen = null; this.nativeLandscape = nativeCall('capabilities')?.landscape; this.composing = false;
     this.pointer = new PointerGestures(this.view, (x, y, mask, immediate) => this.sendPointer(x, y, mask, immediate), () => this.render());
     if (nativeCall('capabilities')?.pointer === 'mouse') { this.pointer.trackpad = false; this.$('trackpad-toggle').textContent = 'Direct mouse'; this.$('trackpad-toggle').setAttribute('aria-pressed', 'false'); }
+    this.appsGesture = new AppsGesture(() => this.appSwitcher?.open());
     client.prepareViewport();
     this.keyboard = new Keyboard(this.surface); this.keyboard.onkeyevent = (keysym, code, down) => {
       if (down) this.held.set(code, keysym); else this.held.delete(code);
@@ -20,12 +22,15 @@ export class DesktopController {
       if (event.pointerType === 'mouse' && event.button !== 0) { event.preventDefault(); return; }
       event.preventDefault(); this.surface.setPointerCapture(event.pointerId);
       if (document.activeElement !== this.$('remote-input')) this.surface.focus({ preventScroll: true });
-      const point = this.local(event); this.pointer.down(event.pointerId, point.x, point.y, event.pointerType);
+      const point = this.local(event);
+      this.appsGesture.down(event.pointerId, point.x, point.y, event.pointerType);
+      if (this.appsGesture.blocking) { this.pointer.release(); return; }
+      this.pointer.down(event.pointerId, point.x, point.y, event.pointerType);
     });
-    this.listen(this.surface, 'pointermove', event => { event.preventDefault(); const p = this.local(event); this.pointer.motion(event.pointerId, p.x, p.y, event.pointerType); });
-    this.listen(this.surface, 'pointerup', event => { event.preventDefault(); this.pointer.up(event.pointerId); });
-    this.listen(this.surface, 'pointercancel', event => { event.preventDefault(); this.pointer.up(event.pointerId, true); });
-    this.listen(this.surface, 'lostpointercapture', event => this.pointer.up(event.pointerId, true));
+    this.listen(this.surface, 'pointermove', event => { event.preventDefault(); const p = this.local(event); this.appsGesture.motion(event.pointerId, p.x, p.y); if (!this.appsGesture.blocking) this.pointer.motion(event.pointerId, p.x, p.y, event.pointerType); });
+    this.listen(this.surface, 'pointerup', event => { event.preventDefault(); const block=this.appsGesture.blocking; this.appsGesture.up(event.pointerId); if(!block)this.pointer.up(event.pointerId); });
+    this.listen(this.surface, 'pointercancel', event => { event.preventDefault(); const block=this.appsGesture.blocking; this.appsGesture.up(event.pointerId,true); if(!block)this.pointer.up(event.pointerId, true); });
+    this.listen(this.surface, 'lostpointercapture', event => { this.appsGesture.up(event.pointerId,true); this.pointer.up(event.pointerId,true); });
     this.listen(this.surface, 'contextmenu', event => { event.preventDefault(); this.pointer.click(4); });
     this.listen(this.surface, 'wheel', event => {
       event.preventDefault(); const p = this.local(event);
@@ -69,6 +74,7 @@ export class DesktopController {
     if (document.createElement) this.monitorStrip = new MonitorStrip(this);
     this.listen(client, 'streamsample', () => this.monitorStrip?.paint());
     this.updateFrame(); this.updateFullscreen();
+    if (options.session && document.createElement) this.appSwitcher = new AppSwitcher(this, options);
     if (options.session) { this.screenSettings = new ScreenSettings(this, options); }
     for (const tab of ['controls','session','display']) this.listen(this.$(`tab-${tab}`), 'click', () => {
       for (const name of ['controls','session','display']) { this.$(`panel-${name}`).hidden = name !== tab; this.$(`tab-${name}`).setAttribute('aria-selected', String(name === tab)); }
@@ -155,7 +161,7 @@ export class DesktopController {
     this.fullscreenControls = controls; this.liveFullscreenButton = live;
   }
   closeFullscreenPanels() {
-    this.toggleKeyboard(false); this.$('session-tools').hidden = true; this.options.closeUnlock?.();
+    this.appSwitcher?.close(); this.toggleKeyboard(false); this.$('session-tools').hidden = true; this.options.closeUnlock?.();
   }
   showFullscreenControls(show) {
     const previous = document.body.classList.contains('fullscreen-controls-open');
@@ -225,12 +231,13 @@ export class DesktopController {
     }
   }
   release() {
-    this.pointer.release(); this.keyboard?._allKeysUp();
+    this.appsGesture?.reset(); this.pointer.release(); this.keyboard?._allKeysUp();
     for (const [code, keysym] of this.held) this.client.sendKey(keysym, code, false);
     this.held.clear();
     for (const id of ['modifier-command', 'modifier-control', 'modifier-alt', 'modifier-shift']) this.$(id).setAttribute('aria-pressed', 'false');
   }
   destroy() {
+    this.appSwitcher?.destroy();
     this.monitorStrip?.destroy();
     this.screenSettings?.destroy();
     this.release(); this.toggleKeyboard(false); this.destroyed = true; cancelAnimationFrame(this.raf);

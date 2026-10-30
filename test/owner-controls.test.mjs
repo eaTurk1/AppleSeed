@@ -6,11 +6,11 @@ import { once } from 'node:events';
 import { WebSocket } from 'ws';
 import { createApp } from '../server.mjs';
 
-async function fixture(t, unlockCommand) {
+async function fixture(t, unlockCommand, options = {}) {
   const sockets = new Set();
   const vnc = net.createServer(socket => { sockets.add(socket); socket.on('error', () => {}); socket.on('close', () => sockets.delete(socket)); socket.write('RFB 003.008\n'); });
   vnc.listen(0, '127.0.0.1'); await once(vnc, 'listening');
-  const app = createApp({ port: 18796, vncPort: vnc.address().port, publicURL: 'https://mac.example.ts.net', allowedLogin: 'owner@example.com', portalURL: 'https://portal.example/appleseed/remote', sessionMs: 0, unlockCommand });
+  const app = createApp({ port: 18796, vncPort: vnc.address().port, publicURL: 'https://mac.example.ts.net', allowedLogin: 'owner@example.com', portalURL: 'https://portal.example/appleseed/remote', sessionMs: 0, unlockCommand, ...options });
   app.server.listen(0, '127.0.0.1'); await once(app.server, 'listening');
   t.after(async () => { await app.close(); for (const socket of sockets) socket.destroy(); await new Promise(resolve => vnc.close(resolve)); });
   const port = app.server.address().port;
@@ -57,4 +57,22 @@ test('portal owner controls reject cross-site and primitive bodies without crash
   for (const value of [null, true, 1, 'invalid', []]) assert.equal((await f.post('/api/portal', value)).status, 400);
   const response = await f.post('/api/portal', { op: 'disable' });
   assert.equal(response.status, 200); assert.equal(JSON.parse(response.body).enabled, false);
+});
+
+test('Apps requires private owner origin, active session and opaque references only', async t => {
+ const calls=[];
+ const f=await fixture(t,async()=>({ok:true}),{appsCommand:async value=>{calls.push(value);return {ok:true,apps:[]};}});
+ const post=(value,headers)=>f.post('/api/apps',value,headers);
+ assert.equal((await post({op:'list'})).status,409);
+ const ws=await f.connect();
+ assert.equal((await post({op:'list',session:f.session},{Origin:'https://evil.example'})).status,403);
+ assert.equal((await post({op:'list',session:f.session},{Host:'mac.example.ts.net',Origin:'https://mac.example.ts.net','Tailscale-User-Login':'stranger@example.com'})).status,403);
+ for(const value of [null,true,[],{op:'execute'},{op:'activate',session:f.session,app:'arbitrary script'},{op:'tab-activate',session:f.session,app:f.session,tab:1}])assert.equal((await post(value)).status,400);
+ assert.deepEqual(calls,[]);
+ assert.equal((await post({op:'list',session:f.session,password:'not-forwarded',script:'not-forwarded'})).status,200);
+ assert.deepEqual(calls,[{op:'apps-list'}]);
+ assert.equal((await post({op:'tab-activate',session:f.session,app:f.session,tab:f.session,url:'not-forwarded'})).status,200);
+ assert.deepEqual(calls[1],{op:'apps-tab-activate',app:f.session,tab:f.session});
+ ws.close();await once(ws,'close');
+ assert.equal((await post({op:'list',session:f.session})).status,409);
 });

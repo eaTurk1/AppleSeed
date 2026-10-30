@@ -16,7 +16,7 @@ public final class ConnectionPolicyTest {
         ConnectionPolicy.URL = "https://second.example.ts.net:9447/";
         if (ConnectionPolicy.isTrusted(configured)) throw new AssertionError("Previous Mac remained trusted");
         String origin = ConnectionPolicy.URL;
-        for (String asset : new String[]{"app.js", "free-tools.js", "appearance.js", "quick-access.js", "safe-unlock.js", "portal-control.js", "monitor-strip.js", "stream-quality.js", "desktop-model.js", "desktop-controller.js", "apple-rfb.js", "style.css"}) {
+        for (String asset : new String[]{"app.js", "app-switcher.js", "free-tools.js", "appearance.js", "quick-access.js", "safe-unlock.js", "portal-control.js", "monitor-strip.js", "stream-quality.js", "desktop-model.js", "desktop-controller.js", "apple-rfb.js", "style.css"}) {
             if (!("client/" + asset).equals(ClientAssets.path(origin + asset, "GET", false))) throw new AssertionError("Client fix not bundled");
         }
         for (String path : new String[]{"", "api/status", "api/screen", "vnc", "novnc/core/rfb.js", "credential-vault", "%2e%2e/style.css"}) {

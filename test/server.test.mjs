@@ -59,7 +59,7 @@ test('APK downloads use an attachment and retain the owner access boundary', asy
   if (existsSync(new URL('../public/AppleSeed.apk', import.meta.url))) {
     assert.equal(response.code, 200);
     assert.equal(response.headers['content-type'], 'application/vnd.android.package-archive');
-    assert.match(response.headers['content-disposition'], /attachment; filename="AppleSeed-2.0.1.apk"/);
+    assert.match(response.headers['content-disposition'], /attachment; filename="AppleSeed-2.1.0.apk"/);
   } else assert.equal(response.code, 404);
 });
 

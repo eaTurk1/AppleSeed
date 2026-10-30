@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 if (process.argv[2]) throw new Error('Usage: node scripts/build-apk.mjs. AppleSeed has one complete free edition.');
-const version = '2.0.1', versionCode = 20;
+const version = '2.1.0', versionCode = 21;
 const appName = 'AppleSeed';
 const sdk = process.env.ANDROID_HOME || path.join(os.homedir(), 'Library/Android/sdk');
 const jdk = process.env.JAVA_HOME || '/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home';
@@ -22,7 +22,7 @@ for (const dir of ['classes', 'generated', 'dex', 'policy']) mkdirSync(path.join
 mkdirSync(out, { recursive: true });
 const assets = path.join(build, 'assets');
 mkdirSync(path.join(assets, 'client'), { recursive: true });
-for (const file of ['app.js', 'free-tools.js', 'appearance.js', 'quick-access.js', 'safe-unlock.js', 'portal-control.js', 'monitor-strip.js', 'stream-quality.js', 'desktop-model.js', 'desktop-controller.js', 'apple-rfb.js', 'style.css']) copyFileSync(path.join(root, 'public', file), path.join(assets, 'client', file));
+for (const file of ['app.js', 'free-tools.js', 'appearance.js', 'quick-access.js', 'safe-unlock.js', 'portal-control.js', 'monitor-strip.js', 'stream-quality.js', 'desktop-model.js', 'desktop-controller.js', 'app-switcher.js', 'apple-rfb.js', 'style.css']) copyFileSync(path.join(root, 'public', file), path.join(assets, 'client', file));
 const manifest = path.join(build, 'AndroidManifest.xml');
 writeFileSync(manifest, readFileSync(path.join(main, 'AndroidManifest.xml'), 'utf8').replace(/android:label="AppleSeed"/, `android:label="${appName}"`).replace(/android:versionCode="[^"]+"/, `android:versionCode="${versionCode}"`).replace(/android:versionName="[^"]+"/, `android:versionName="${version}"`));
 const config = path.join(build, 'generated/org/appleseed/remote/Edition.java');

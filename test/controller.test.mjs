@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
-import { DesktopViewport, PointerGestures, availableMonitors } from '../public/desktop-model.js';
+import { DesktopViewport, PointerGestures, availableMonitors, AppsGesture } from '../public/desktop-model.js';
 const source = (await readFile(new URL('../public/desktop-controller.js', import.meta.url), 'utf8')).replace(/^import .*;\n/gm, '').replace('export class DesktopController', 'class DesktopController') + '\nthis.Controller = DesktopController;';
 function fixture() {
   const elements = new Map(), keys = [], pointer = [], classes = new Set(), handlers = new Map();
@@ -23,7 +23,7 @@ function fixture() {
   const client = new Element(); client.framebuffer = { width: 3200, height: 1200, screens: [{ id: '1', x: 0, y: 0, width: 1600, height: 1200 }, { id: '2', x: 1600, y: 0, width: 1600, height: 1200 }] };
   client.canvas = new Element(); client.prepareViewport = () => {}; client.sendPointer = (...value) => pointer.push(value); client.sendKey = (...value) => keys.push(value);
   const window = new Element(); window.innerWidth = 400; window.innerHeight = 800;
-  const context = { DesktopViewport, PointerGestures, availableMonitors, document, window, screen: { orientation: { type: 'portrait-primary' } },
+  const context = { DesktopViewport, PointerGestures, availableMonitors, AppsGesture, document, window, screen: { orientation: { type: 'portrait-primary' } },
     Keyboard: class { grab() {} ungrab() {} _allKeysUp() {} }, Keysyms: { lookup: value => value }, Option: class { constructor(name, id) { this.value = id; } },
     ResizeObserver: class { observe() {} disconnect() {} }, requestAnimationFrame: fn => { handlers.set(1, fn); return 1; }, cancelAnimationFrame: () => handlers.clear(), setTimeout, clearTimeout,
   };
@@ -131,4 +131,13 @@ test('pointer motion is coalesced per visual frame while click and release order
   f.controller.sendPointer(80, 90, 1, false); f.controller.sendPointer(80, 90, 0, true);
   assert.deepEqual(f.pointer.slice(1), [[60, 70, 0], [60, 70, 1], [80, 90, 1], [80, 90, 0]]);
   f.flush(); assert.equal(f.pointer.length, 5); f.controller.destroy();
+});
+
+test('three-finger swipe opens Apps without a remote click or stuck pointer',()=>{
+ const f=fixture();let opened=0;f.controller.appSwitcher={open:()=>opened++,destroy(){}};
+ const surface=f.get('pointer-surface');
+ for(let i=0;i<3;i++)surface.emit('pointerdown',{pointerId:i,pointerType:'touch',clientX:50+i*60,clientY:250});
+ for(let i=0;i<3;i++)surface.emit('pointermove',{pointerId:i,pointerType:'touch',clientX:50+i*60,clientY:150});
+ for(let i=0;i<3;i++)surface.emit('pointerup',{pointerId:i,pointerType:'touch'});
+ assert.equal(opened,1);assert.ok(f.pointer.every(p=>p[2]===0));assert.equal(f.controller.pointer.points.size,0);assert.equal(f.keys.length,0);f.controller.destroy();
 });

@@ -168,3 +168,26 @@ export class PointerGestures {
     }
   }
 }
+
+// Reserve a three-finger upward swipe without emitting a remote click or key.
+export class AppsGesture {
+  constructor(open, now = () => Date.now()) { this.open = open; this.now = now; this.points = new Map(); this.blocking = false; }
+  down(id, x, y, kind) {
+    if (kind !== 'touch') return;
+    this.points.set(id, {x,y});
+    if (this.points.size === 3 && !this.blocking) { this.blocking = true; this.start = this.center(); this.time = this.now(); this.valid = true; }
+    if (this.points.size > 3) this.valid = false;
+  }
+  center() { const p=[...this.points.values()]; return {x:p.reduce((n,s)=>n+s.x,0)/p.length,y:p.reduce((n,s)=>n+s.y,0)/p.length}; }
+  motion(id,x,y) { if(this.points.has(id))this.points.set(id,{x,y}); }
+  up(id,cancelled=false) {
+    if (!this.points.has(id)) return;
+    let fire=false;
+    if(this.blocking && this.valid && this.points.size===3 && !cancelled){const end=this.center();fire=this.now()-this.time<1200 && end.y-this.start.y < -55 && Math.abs(end.x-this.start.x)<80;}
+    if(cancelled)this.valid=false;
+    this.points.delete(id);
+    if(fire){this.valid=false;this.open();}
+    if(!this.points.size){this.blocking=false;this.valid=false;}
+  }
+  reset(){this.points.clear();this.blocking=false;this.valid=false;}
+}
